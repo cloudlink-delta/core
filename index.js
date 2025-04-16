@@ -688,6 +688,7 @@
           return;
         }
         this.ringingPeers.set(call.peer, call);
+        this.handleCall(call.peer, call);
         Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerRings");
       });
 
