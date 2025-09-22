@@ -135,7 +135,7 @@
   /* eslint-disable */
   // prettier-ignore
   function ULID(){let $=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","J","K","M","N","P","Q","R","S","T","V","W","X","Y","Z"],e=-1,f=new Uint8Array(16),_=new DataView(f.buffer,0,6),n=new Uint8Array(f.buffer,6,10),t=Array(26);return function(){let r=Date.now();if(r===e)for(let o=9;o>=0&&!(n[o]++<255);o--);else e=r,_.setUint16(0,r/4294967296|0),_.setUint32(2,0|r),window.crypto.getRandomValues(n);return function e(f){t[0]=$[f[0]>>5],t[1]=$[f[0]>>0&31];for(let _=0;_<3;_++)t[8*_+2]=$[f[5*_+1]>>3],t[8*_+3]=$[(f[5*_+1]<<2|f[5*_+2]>>6)&31],t[8*_+4]=$[f[5*_+2]>>1&31],t[8*_+5]=$[(f[5*_+2]<<4|f[5*_+3]>>4)&31],t[8*_+6]=$[(f[5*_+3]<<1|f[5*_+4]>>7)&31],t[8*_+7]=$[f[5*_+4]>>2&31],t[8*_+8]=$[(f[5*_+4]<<3|f[5*_+5]>>5)&31],t[8*_+9]=$[f[5*_+5]>>0&31];return t.join("")}(f)}}
-
+  
   class PeerJS_Scratch {
     constructor() {
       this.peer;
@@ -521,6 +521,14 @@
       Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerError");
     }
 
+    // Ensure a default logical channel mapping exists for a PeerJS connection
+    ensureDefaultChannel(conn) {
+      if (!conn.channels) conn.channels = new Map();
+      if (!conn.channels.has("default")) {
+        conn.channels.set("default", { chan: conn, data: "" });
+      }
+    }
+
     async handleChannelData(conn, chan, data) {
       const { opcode, payload } = data;
       if (this.verboseLogs) console.log(conn.peer, chan.label, data);
@@ -536,9 +544,9 @@
           if (chan.label !== "default") {
             console.warn(
               "Attempted to call NEW_CHAN on non-default channel " +
-                chan.label +
-                " with peer " +
-                conn.peer
+              chan.label +
+              " with peer " +
+              conn.peer
             );
             return;
           }
@@ -593,7 +601,8 @@
     // PeerJS connection event handlers
     handleDataConnection(conn) {
       conn.on("open", () => {
-        this.handleChannelOpen(conn, conn);
+        this.ensureDefaultChannel(conn);
+        this.handleChannelOpen(conn, conn.channels.get("default").chan);
         if (conn.label === "default") {
           this.newestConnected = conn.peer;
           Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerConnects");
@@ -604,7 +613,11 @@
       });
 
       conn.on("close", () => {
-        this.handleChannelClose(conn, conn);
+        if (conn.channels && conn.channels.has("default")) {
+          this.handleChannelClose(conn, conn.channels.get("default").chan);
+        } else {
+          this.handleChannelClose(conn, conn);
+        }
         if (conn.label === "default") {
           this.lastDisconnected = conn.peer;
           this.dataConnections.delete(conn.peer);
@@ -623,7 +636,8 @@
       });
 
       conn.on("data", async (data) => {
-        await this.handleChannelData(conn, conn, JSON.parse(data));
+        this.ensureDefaultChannel(conn);
+        await this.handleChannelData(conn, conn.channels.get("default").chan, JSON.parse(data));
       });
     }
 
@@ -678,6 +692,7 @@
       this.peer.on("connection", (conn) => {
         conn.idCounter = 2;
         conn.channels = new Map();
+        this.ensureDefaultChannel(conn);
         this.dataConnections.set(conn.peer, conn);
         this.handleDataConnection(conn);
       });
@@ -723,6 +738,7 @@
       this.dataConnections.set(conn.peer, conn);
       conn.idCounter = 2;
       conn.channels = new Map();
+      this.ensureDefaultChannel(conn);
       this.handleDataConnection(conn);
     }
 
@@ -787,6 +803,7 @@
         });
 
         // Tell the peer about the new channel
+        this.ensureDefaultChannel(conn);
         conn.channels.get("default").chan.send(
           JSON.stringify({
             opcode: "NEW_CHAN",
