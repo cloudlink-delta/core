@@ -1,11 +1,10 @@
-![peerjs](https://github.com/user-attachments/assets/8572d32f-f8b0-4bac-aabf-653f29578299)
+![CloudLink Delta](https://github.com/user-attachments/assets/aa2ac9e0-4187-44c4-84be-069242d2b6dc)
 
-# PeerJS-Scratch
-A wrapper of the PeerJS library for Scratch 3.0.
+# CLΔ Core extension library.
+Contains the essentials you need to get for P2P network connectivity.
 
 ## Usage
 Import the extension as unsandboxed in a Turbowarp-compatible environment.
-Block functions and arguments are nearly 1:1 with the [original PeerJS docs.](https://peerjs.com/docs/#api)
 
 ## Notes
 [Working connectivity](https://status.peerjs.com/) to `0.peerjs.com` is required for this extension to work by default.
