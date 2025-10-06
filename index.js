@@ -1,15 +1,15 @@
-// Name: PeerJS
-// ID: mikedevpeerjs
-// Description: Use PeerJS in your projects.
+// Name: CloudLink Delta
+// ID: cldelta
+// Description: Essentials for P2P network connectivity.
 // By: MikeDEV <https://scratch.mit.edu/users/MikeDEVTheDucklord/>
 // License: MIT
 
 /*
-    PeerJS Extension
+    CloudLink Delta Core Extension
 
     MIT License
 
-    Copyright (C) 2025 Mike Renaker "MikeDEV".
+    Copyright (C) 2025 CloudLink Delta.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -32,34 +32,32 @@
 
 (function (Scratch) {
   "use strict";
-  const blockIconURI =
-    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iNDYiIHZpZXdCb3g9IjAgMCAxOCA0NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExIDMxSDdWNDVIMTFWMzFaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTUuMzYzNjQgMzBMMSAyMS41VjEzSDQuMzkzOTRMNy4zMDMwMyAxNi4zMDU2SDEwLjIxMjFMMTMuMTIxMiAxM0gxN1YyMS41TDEyLjE1MTUgMzBINS4zNjM2NFoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNMiAxVjExLjVINi41VjcuNUg1LjVWNEgzVjFIMloiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNMTYgMVYxMS41SDExLjVWNy41SDEyLjVWNEgxNVYxSDE2WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41Ii8+CjxwYXRoIGQ9Ik03LjUgMTQuNUgxMC41VjYuNUgxMS41VjRINi41VjYuNUg3LjVWMTQuNVoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNNSAzVjFINlYzSDVaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTcgM1YxSDhWM0g3WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41Ii8+CjxwYXRoIGQ9Ik0xMCAzVjFIMTFWM0gxMFoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNMTIgM1YxSDEzVjNIMTJaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPC9zdmc+Cg==";
-  const menuIconURI =
-    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4OV8xNTApIj4KPHBhdGggZD0iTTAgMjVDMCAxMS4xOTI5IDExLjE5MjkgMCAyNSAwQzM4LjgwNzEgMCA1MCAxMS4xOTI5IDUwIDI1QzUwIDM4LjgwNzEgMzguODA3MSA1MCAyNSA1MEMxMS4xOTI5IDUwIDAgMzguODA3MSAwIDI1WiIgZmlsbD0iI0U5NjE1MSIvPgo8cGF0aCBkPSJNMjcgMzNIMjNWNDdIMjdWMzNaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTIxLjM2MzYgMzJMMTcgMjMuNVYxNUgyMC4zOTM5TDIzLjMwMyAxOC4zMDU2SDI2LjIxMjFMMjkuMTIxMiAxNUgzM1YyMy41TDI4LjE1MTUgMzJIMjEuMzYzNloiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNMTggM1YxMy41SDIyLjVWOS41SDIxLjVWNkgxOVYzSDE4WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41Ii8+CjxwYXRoIGQ9Ik0zMiAzVjEzLjVIMjcuNVY5LjVIMjguNVY2SDMxVjNIMzJaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTIzLjUgMTYuNUgyNi41VjguNUgyNy41VjZIMjIuNVY4LjVIMjMuNVYxNi41WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41Ii8+CjxwYXRoIGQ9Ik0yMSA1VjNIMjJWNUgyMVoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNMjMgNVYzSDI0VjVIMjNaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTI2IDVWM0gyN1Y1SDI2WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41Ii8+CjxwYXRoIGQ9Ik0yOCA1VjNIMjlWNUgyOFoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4OV8xNTAiPgo8cmVjdCB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+Cg==";
-
+  const IconURI =
+    "data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%22312%22%20height%3D%22218%22%20viewBox%3D%220%200%20312%20218%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M155.88%200C194.829%200.000212318%20226.786%2030.1084%20229.987%2068.4414H237.391C278.466%2068.4414%20311.759%20101.922%20311.759%20143.221C311.759%20184.52%20278.466%20218%20237.391%20218H74.3682C33.2934%20218%200%20184.52%200%20143.221C0.000123011%20101.922%2033.2935%2068.4415%2074.3682%2068.4414H81.7715C84.9733%2030.1082%20116.931%200%20155.88%200ZM155.88%2010C122.221%2010%2094.5136%2036.0335%2091.7373%2069.2744L90.9717%2078.4414H74.3682C38.8684%2078.4415%2010.0001%20107.392%2010%20143.221C10%20179.049%2038.8683%20208%2074.3682%20208H237.391C272.891%20208%20301.759%20179.049%20301.759%20143.221C301.759%20107.392%20272.891%2078.4414%20237.391%2078.4414H220.788L220.023%2069.2744C217.246%2036.0337%20189.539%2010.0002%20155.88%2010Z%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M109.5%20180V172.5L149.85%2072.4502H162L202.2%20172.5V180H109.5ZM124.95%20167.85H186.6L161.55%20102.45C161.25%20101.65%20160.7%20100.2%20159.9%2098.1002C159.1%2096.0002%20158.3%2093.8502%20157.5%2091.6502C156.8%2089.3502%20156.25%2087.6002%20155.85%2086.4002C155.35%2088.4002%20154.75%2090.4502%20154.05%2092.5502C153.45%2094.5502%20152.8%2096.4002%20152.1%2098.1002C151.5%2099.8002%20151%20101.25%20150.6%20102.45L124.95%20167.85Z%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E";
+  
   // Require the extension to be unsandboxed
   if (!Scratch.extensions.unsandboxed) {
-    alert("The PeerJS extension must be loaded in an unsandboxed environment.");
+    alert("The CloudLink Delta extension must be loaded in an unsandboxed environment.");
   }
 
   // Require access to the VM and/or runtime
   if (!Scratch.vm || !Scratch.vm.runtime) {
     alert(
-      "The PeerJS extension could not detect access to the Scratch VM and/or runtime."
+      "The CloudLink Delta extension could not detect access to the Scratch VM and/or runtime."
     );
   }
 
   // Require the browser to support WebRTC (used for connectivity)
   if (!RTCPeerConnection) {
     alert(
-      "The PeerJS extension could not detect WebRTC support; this extension won't work properly."
+      "The CloudLink Delta extension could not detect WebRTC support; this extension won't work properly."
     );
   }
 
   // Require browser to support Web Locks API (used for concurrency)
   if (!navigator.locks) {
     alert(
-      "The PeerJS extension could not detect Web Locks support; this extension won't work properly."
+      "The CloudLink Delta extension could not detect Web Locks support; this extension won't work properly."
     );
   }
 
@@ -136,7 +134,7 @@
   // prettier-ignore
   function ULID(){let $=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","J","K","M","N","P","Q","R","S","T","V","W","X","Y","Z"],e=-1,f=new Uint8Array(16),_=new DataView(f.buffer,0,6),n=new Uint8Array(f.buffer,6,10),t=Array(26);return function(){let r=Date.now();if(r===e)for(let o=9;o>=0&&!(n[o]++<255);o--);else e=r,_.setUint16(0,r/4294967296|0),_.setUint32(2,0|r),window.crypto.getRandomValues(n);return function e(f){t[0]=$[f[0]>>5],t[1]=$[f[0]>>0&31];for(let _=0;_<3;_++)t[8*_+2]=$[f[5*_+1]>>3],t[8*_+3]=$[(f[5*_+1]<<2|f[5*_+2]>>6)&31],t[8*_+4]=$[f[5*_+2]>>1&31],t[8*_+5]=$[(f[5*_+2]<<4|f[5*_+3]>>4)&31],t[8*_+6]=$[(f[5*_+3]<<1|f[5*_+4]>>7)&31],t[8*_+7]=$[f[5*_+4]>>2&31],t[8*_+8]=$[(f[5*_+4]<<3|f[5*_+5]>>5)&31],t[8*_+9]=$[f[5*_+5]>>0&31];return t.join("")}(f)}}
   
-  class PeerJS_Scratch {
+  class CloudLinkDelta_Core {
     constructor() {
       this.peer;
       this.dataConnections = new Map();
@@ -152,11 +150,11 @@
 
     getInfo() {
       return {
-        id: "mikedevpeerjs",
-        name: "PeerJS",
-        blockIconURI: blockIconURI,
-        menuIconURI: menuIconURI,
-        color1: "#E96151",
+        id: "cldelta",
+        name: "CloudLink Delta (CLΔ)",
+        menuIconURI: IconURI,
+        blockIconURI: IconURI,
+        color1: "#0F7EBD",
         blocks: [
           {
             opcode: "newULID",
@@ -224,12 +222,12 @@
           {
             opcode: "isPeerConnected",
             blockType: Scratch.BlockType.BOOLEAN,
-            text: Scratch.translate("connected to PeerJS server?"),
+            text: Scratch.translate("connected to session server?"),
           },
           {
             opcode: "createPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("connect to PeerJS as [ID]"),
+            text: Scratch.translate("connect to session server as [ID]"),
             arguments: {
               ID: {
                 type: Scratch.ArgumentType.STRING,
@@ -240,17 +238,17 @@
           {
             opcode: "disconnectPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("disconnect from PeerJS server"),
+            text: Scratch.translate("disconnect from session server"),
           },
           {
             opcode: "reconnectPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("reconnect to PeerJS server"),
+            text: Scratch.translate("reconnect to session server"),
           },
           {
             opcode: "destroyPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("destroy PeerJS connection"),
+            text: Scratch.translate("destroy session server connection"),
           },
           "---",
           {
@@ -518,10 +516,10 @@
         err
       );
       this.peer.errorInfo = err;
-      Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerError");
+      Scratch.vm.runtime.startHats("cldelta_whenPeerError");
     }
 
-    // Ensure a default logical channel mapping exists for a PeerJS connection
+    // Ensure a default logical channel mapping exists for a CloudLink Delta connection
     ensureDefaultChannel(conn) {
       if (!conn.channels) conn.channels = new Map();
       if (!conn.channels.has("default")) {
@@ -537,7 +535,7 @@
 
         case "P_MSG":
           conn.channels.get(chan.label).data = payload;
-          Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerGetsMessage");
+          Scratch.vm.runtime.startHats("cldelta_whenPeerGetsMessage");
           break;
 
         case "NEW_CHAN":
@@ -557,7 +555,7 @@
           if (conn.channels.has(label)) return;
 
           // Acquire WebLock to prevent other peers from opening channels while we're creating this one
-          const lock_id = "mikedevpeerjs_" + conn.peer + "_" + chan.label;
+          const lock_id = "cldelta_" + conn.peer + "_" + chan.label;
           await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
             const newchan = conn.peerConnection.createDataChannel(label, {
               ordered: ordered,
@@ -598,16 +596,16 @@
       }
     }
 
-    // PeerJS connection event handlers
+    // CloudLink Delta connection event handlers
     handleDataConnection(conn) {
       conn.on("open", () => {
         this.ensureDefaultChannel(conn);
         this.handleChannelOpen(conn, conn.channels.get("default").chan);
         if (conn.label === "default") {
           this.newestConnected = conn.peer;
-          Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerConnects");
+          Scratch.vm.runtime.startHats("cldelta_whenPeerConnects");
           Scratch.vm.runtime.startHats(
-            "mikedevpeerjs_whenSpecificPeerConnects"
+            "cldelta_whenSpecificPeerConnects"
           );
         }
       });
@@ -624,9 +622,9 @@
           if (this.voiceConnections.has(conn.peer)) {
             this.voiceConnections.get(conn.peer).call.close();
           }
-          Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerDisconnects");
+          Scratch.vm.runtime.startHats("cldelta_whenPeerDisconnects");
           Scratch.vm.runtime.startHats(
-            "mikedevpeerjs_whenSpecificPeerDisconnects"
+            "cldelta_whenSpecificPeerDisconnects"
           );
         }
       });
@@ -685,7 +683,7 @@
 
       this.peer.on("open", (id) => {
         if (id === ID) {
-          Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerCreated");
+          Scratch.vm.runtime.startHats("cldelta_whenPeerCreated");
         }
       });
 
@@ -704,21 +702,21 @@
         }
         this.ringingPeers.set(call.peer, call);
         this.handleCall(call.peer, call);
-        Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerRings");
+        Scratch.vm.runtime.startHats("cldelta_whenPeerRings");
       });
 
       this.peer.on("close", () => {
-        Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerDestroyed");
+        Scratch.vm.runtime.startHats("cldelta_whenPeerDestroyed");
       });
 
       this.peer.on("disconnected", () => {
-        Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerDisconnected");
+        Scratch.vm.runtime.startHats("cldelta_whenPeerDisconnected");
       });
 
       this.peer.on("error", (err) => {
         console.log("Peer error: " + err);
         this.peer.errorInfo = err;
-        Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerHasError");
+        Scratch.vm.runtime.startHats("cldelta_whenPeerHasError");
       });
     }
 
@@ -767,7 +765,7 @@
       if (!this.dataConnections.has(ID)) return;
       if (this.dataConnections.get(ID).channels.has(CHANNEL)) return;
 
-      const lock_id = "mikedevpeerjs_" + ID + "_" + CHANNEL;
+      const lock_id = "cldelta_" + ID + "_" + CHANNEL;
       await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
         // Create a new channel with PeerJS
         const conn = this.dataConnections.get(ID);
@@ -918,7 +916,7 @@
         if (!this.hasMicPerms) return;
       }
       if (this.voiceConnections.has(ID)) return;
-      const lock_id = "mikedevpeerjs_" + ID + "_call";
+      const lock_id = "cldelta_" + ID + "_call";
       await navigator.locks.request(
         lock_id,
         { ifAvailable: true },
@@ -944,7 +942,7 @@
       }
       if (!this.ringingPeers.has(ID)) return;
       const call = this.ringingPeers.get(ID);
-      const lock_id = "mikedevpeerjs_" + ID + "_call";
+      const lock_id = "cldelta_" + ID + "_call";
       await navigator.locks.request(
         lock_id,
         { ifAvailable: true },
@@ -986,5 +984,5 @@
     }
   }
 
-  Scratch.extensions.register(new PeerJS_Scratch());
+  Scratch.extensions.register(new CloudLinkDelta_Core());
 })(Scratch);
