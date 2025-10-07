@@ -114,6 +114,106 @@
 	})();
 	//# sourceMappingURL=peerjs.min.js.map
 
+	// Ah yes, Perry the platypus. It seems you've found my callback-inator. 
+	class CallbackInator {
+        constructor() {
+            this.calls = new Map();
+            this.debug = 0;
+        }
+
+        /**
+         * Sets the debug level for the CallbackInator.
+         *
+         * @param {number} level - The desired debug level. Higher numbers enable more verbose logging.
+         * 
+         * Adjust the verbosity of logging for debugging purposes. A higher level means more detailed logs.
+         */
+        set_debug_level(level) {
+            this.debug = level;
+        }
+
+        /**
+         * Unbinds a callback function from a specified event name.
+         * @param {string} name - The name of the event to unbind the callback from.
+         * @param {string} id - The ID of the callback to unbind. If set to "*", all callbacks for the event will be unbound.
+         * @returns {void}
+         * 
+         * Does nothing if the callback was never bound.
+         */
+        unbind(name, id) {
+            if (id == "*") {
+                this.calls.delete(name);
+                if (this.debug > 2) console.log(`Unbound all callbacks for "${name}"`);
+                return;
+            }
+            if (!this.calls.has(name) || !this.calls.get(name).has(id)) return;
+            this.calls.get(name).delete(id);
+            if (this.debug > 2) console.log(`Unbound callback for "${name}" with ID "${id}"`);
+        }
+
+        /**
+         * Binds a callback function to a specified event name.
+         *
+         * @param {string} name - The name of the event to bind the callback to.
+         * @param {function} callback - The function to be called when the event is triggered.
+         * @param {string} [id="default"] - An optional identifier for the callback.
+         * @throws {TypeError} If the provided callback is not a function.
+         */
+        bind(name, callback, id = "default") {
+            if (!this.calls.has(name)) {
+                this.calls.set(name, new Map());
+            }
+            if (typeof callback !== 'function') {
+                if (this.debug > 0) console.error('Callback must be a function');
+                return;
+            }
+            this.calls.get(name).set(id, callback);
+            if (this.debug > 2) console.log(`Bound callback for "${name}" with ID "${id}"`);
+        }
+
+        /**
+         * Executes all registered callbacks for a given event name with the provided arguments.
+         *
+         * @param {string} name - The name of the event whose callbacks should be executed.
+         * @param {...*} args - Arguments to pass to the callbacks.
+         * @returns {void}
+         *
+         * Logs warnings if there are no callbacks registered, if the callbacks map is null,
+         * if the callbacks map is empty, or if any callback is not a function. Logs an error
+         * if the registered callback is not a map.
+         */
+        call(name, ...args) {
+            if (!this.calls.has(name)) {
+                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+                return;
+            };
+            if (this.calls.get(name) === null) {
+                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+                return;
+            }
+            if (this.calls.get(name).size === 0) {
+                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+                return;
+            }
+            if (!(this.calls.get(name) instanceof Map)) {
+                if (this.debug > 0) console.error("Callback was not a map! Got ", typeof this.calls.get(name), "instead.");
+                return;
+            }
+            if (this.debug > 2) console.log(`Executing callbacks for "${name}"`);
+            for (const callback of this.calls.get(name).values()) {
+                if (callback === null || typeof callback !== 'function') {
+                    if (this.debug > 1) console.warn(`Callback registered for "${name}" is null or not a function`);
+                    continue;
+                }
+                try {
+                    if (this.debug > 2) console.log(`Executing callback ${callback}"`);
+                    callback(...args);
+                } catch (error) {
+                    if (this.debug > 0) console.error(`Error executing callback for "${name}"`, error);
+                }
+            }
+        }
+    }
 
 	class CloudLinkDelta_Core {
 		constructor() {
