@@ -8,3 +8,5 @@ Import the extension as unsandboxed in a Turbowarp-compatible environment.
 
 ## Notes
 [Working connectivity](https://status.peerjs.com/) to `0.peerjs.com` is required for this extension to work by default.
+
+A browser compatible with WebRTC and WebLocks support is required.
