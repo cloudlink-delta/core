@@ -222,6 +222,7 @@
 			this.newestConnected = "";
 			this.lastDisconnected = "";
 			this.verboseLogs = false;
+			this.callbacks = new CallbackInator();
 		}
 
 		getInfo() {
