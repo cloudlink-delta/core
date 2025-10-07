@@ -779,4 +779,5 @@
 	const core = new CloudLinkDelta_Core();
 	Scratch.extensions.register(core);
 	Scratch.vm.runtime.ext_cldelta_core = core;
+	console.log("CLΔ Core extension loaded.");
 })(Scratch);
