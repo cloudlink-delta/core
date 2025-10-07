@@ -41,27 +41,31 @@
 	// Require the extension to be unsandboxed
 	if (!Scratch.extensions.unsandboxed) {
 		alert("The CloudLink Delta extension must be loaded in an unsandboxed environment.");
+		return;
 	}
 
 	// Require access to the VM and/or runtime
 	if (!Scratch.vm || !Scratch.vm.runtime) {
 		alert(
-			"The CloudLink Delta extension could not detect access to the Scratch VM and/or runtime."
+			"The CloudLink Delta extension could not detect access to the Scratch VM and/or runtime; this extension won't work."
 		);
+		return;
 	}
 
 	// Require the browser to support WebRTC (used for connectivity)
 	if (!RTCPeerConnection) {
 		alert(
-			"The CloudLink Delta extension could not detect WebRTC support; this extension won't work properly."
+			"The CloudLink Delta extension could not detect WebRTC support; this extension won't work."
 		);
+		return;
 	}
 
 	// Require browser to support Web Locks API (used for concurrency)
 	if (!navigator.locks) {
 		alert(
-			"The CloudLink Delta extension could not detect Web Locks support; this extension won't work properly."
+			"The CloudLink Delta extension could not detect Web Locks support; this extension won't work."
 		);
+		return;
 	}
 
 	/*
@@ -115,13 +119,9 @@
 		constructor() {
 			this.peer;
 			this.dataConnections = new Map();
-			this.voiceConnections = new Map();
 			this.newestConnected = "";
 			this.lastDisconnected = "";
-			this.hasMicPerms = false;
 			this.verboseLogs = false;
-			this.ringingPeers = new Map();
-			this.myVoiceStream;
 		}
 
 		getInfo() {
@@ -290,62 +290,6 @@
 					},
 					"---",
 					{
-						opcode: "whenPeerRings",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate("when peer [ID] calls me"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					{
-						opcode: "doIHaveMicPerms",
-						blockType: Scratch.BlockType.BOOLEAN,
-						text: Scratch.translate("microphone available?"),
-					},
-					{
-						opcode: "requestMicPerms",
-						blockType: Scratch.BlockType.COMMAND,
-						text: Scratch.translate("request microphone access"),
-					},
-					{
-						opcode: "callPeer",
-						blockType: Scratch.BlockType.COMMAND,
-						text: Scratch.translate("call peer [ID]"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					{
-						opcode: "answerPeer",
-						blockType: Scratch.BlockType.COMMAND,
-						text: Scratch.translate("accept incoming call from peer [ID]"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					{
-						opcode: "hangupPeerCall",
-						blockType: Scratch.BlockType.COMMAND,
-						text: Scratch.translate("hangup or decline call from peer [ID]"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					"---",
-					{
 						opcode: "whenPeerGetsMessage",
 						blockType: Scratch.BlockType.EVENT,
 						isEdgeActivated: false,
@@ -471,7 +415,7 @@
 				err
 			);
 			this.peer.errorInfo = err;
-			Scratch.vm.runtime.startHats("cldelta_whenPeerError");
+			Scratch.vm.runtime.startHats("cldeltacore_whenPeerError");
 		}
 
 		// Ensure a default logical channel mapping exists for a CloudLink Delta connection
@@ -490,7 +434,7 @@
 
 				case "P_MSG":
 					conn.channels.get(chan.label).data = payload;
-					Scratch.vm.runtime.startHats("cldelta_whenPeerGetsMessage");
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerGetsMessage");
 					break;
 
 				case "NEW_CHAN":
@@ -510,7 +454,7 @@
 					if (conn.channels.has(label)) return;
 
 					// Acquire WebLock to prevent other peers from opening channels while we're creating this one
-					const lock_id = "cldelta_" + conn.peer + "_" + chan.label;
+					const lock_id = "cldeltacore_" + conn.peer + "_" + chan.label;
 					await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
 						const newchan = conn.peerConnection.createDataChannel(label, {
 							ordered: ordered,
@@ -558,9 +502,9 @@
 				this.handleChannelOpen(conn, conn.channels.get("default").chan);
 				if (conn.label === "default") {
 					this.newestConnected = conn.peer;
-					Scratch.vm.runtime.startHats("cldelta_whenPeerConnects");
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerConnects");
 					Scratch.vm.runtime.startHats(
-						"cldelta_whenSpecificPeerConnects"
+						"cldeltacore_whenSpecificPeerConnects"
 					);
 				}
 			});
@@ -574,12 +518,12 @@
 				if (conn.label === "default") {
 					this.lastDisconnected = conn.peer;
 					this.dataConnections.delete(conn.peer);
-					if (this.voiceConnections.has(conn.peer)) {
+					/* if (this.voiceConnections.has(conn.peer)) {
 						this.voiceConnections.get(conn.peer).call.close();
-					}
-					Scratch.vm.runtime.startHats("cldelta_whenPeerDisconnects");
+					}*/
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerDisconnects");
 					Scratch.vm.runtime.startHats(
-						"cldelta_whenSpecificPeerDisconnects"
+						"cldeltacore_whenSpecificPeerDisconnects"
 					);
 				}
 			});
@@ -630,7 +574,7 @@
 
 			this.peer.on("open", (id) => {
 				if (id === ID) {
-					Scratch.vm.runtime.startHats("cldelta_whenPeerCreated");
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerCreated");
 				}
 			});
 
@@ -643,27 +587,24 @@
 			});
 
 			this.peer.on("call", async (call) => {
-				if (!this.hasMicPerms || this.voiceConnections.has(call.peer)) {
-					call.close();
-					return;
+				const chat = Scratch.vm.runtime.ext_cldelta_chat;
+				if (!chat) {
+					chat._callHandler(call);
 				}
-				this.ringingPeers.set(call.peer, call);
-				this.handleCall(call.peer, call);
-				Scratch.vm.runtime.startHats("cldelta_whenPeerRings");
 			});
 
 			this.peer.on("close", () => {
-				Scratch.vm.runtime.startHats("cldelta_whenPeerDestroyed");
+				Scratch.vm.runtime.startHats("cldeltacore_whenPeerDestroyed");
 			});
 
 			this.peer.on("disconnected", () => {
-				Scratch.vm.runtime.startHats("cldelta_whenPeerDisconnected");
+				Scratch.vm.runtime.startHats("cldeltacore_whenPeerDisconnected");
 			});
 
 			this.peer.on("error", (err) => {
 				console.log("Peer error: " + err);
 				this.peer.errorInfo = err;
-				Scratch.vm.runtime.startHats("cldelta_whenPeerHasError");
+				Scratch.vm.runtime.startHats("cldeltacore_whenPeerHasError");
 			});
 		}
 
@@ -701,18 +642,13 @@
 			return !this.dataConnections.get(ID).disconnected;
 		}
 
-		whenPeerRings({ ID }) {
-			ID = Scratch.Cast.toString(ID);
-			return this.isOtherPeerConnected({ ID });
-		}
-
 		async openNewPeerChannel({ ID, CHANNEL, ORDERED }) {
 			ID = Scratch.Cast.toString(ID);
 			if (!this.isPeerConnected()) return;
 			if (!this.dataConnections.has(ID)) return;
 			if (this.dataConnections.get(ID).channels.has(CHANNEL)) return;
 
-			const lock_id = "cldelta_" + ID + "_" + CHANNEL;
+			const lock_id = "cldeltacore_" + ID + "_" + CHANNEL;
 			await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
 				// Create a new channel with PeerJS
 				const conn = this.dataConnections.get(ID);
@@ -836,98 +772,6 @@
 
 		readLastPeerDisconnected() {
 			return this.lastDisconnected;
-		}
-
-		async requestMicPerms() {
-			if (this.hasMicPerms || this.myVoiceStream) return;
-			if (await Scratch.canRecordAudio()) {
-				await navigator.mediaDevices
-					.getUserMedia({ audio: true })
-					.then((stream) => {
-						this.myVoiceStream = stream;
-						this.hasMicPerms = true;
-					})
-					.catch((e) => {
-						console.warn(`Failed to get microphone permission. ${e}`);
-						this.hasMicPerms = false;
-					});
-			}
-		}
-
-		async callPeer({ ID }) {
-			ID = Scratch.Cast.toString(ID);
-			if (!this.isPeerConnected()) return;
-			if (!this.dataConnections.has(ID)) return;
-			if (!this.hasMicPerms) {
-				await this.requestMicPerms();
-				if (!this.hasMicPerms) return;
-			}
-			if (this.voiceConnections.has(ID)) return;
-			const lock_id = "cldelta_" + ID + "_call";
-			await navigator.locks.request(
-				lock_id,
-				{ ifAvailable: true },
-				async () => {
-					const call = await this.peer.call(ID, this.myVoiceStream);
-					this.handleCall(ID, call);
-				}
-			);
-		}
-
-		hangupPeerCall({ ID }) {
-			ID = Scratch.Cast.toString(ID);
-			if (this.voiceConnections.has(ID))
-				this.voiceConnections.get(ID).call.close();
-		}
-
-		async answerPeer({ ID }) {
-			ID = Scratch.Cast.toString(ID);
-			if (!this.peer) return;
-			if (!this.hasMicPerms) {
-				await this.requestMicPerms();
-				if (!this.hasMicPerms) return;
-			}
-			if (!this.ringingPeers.has(ID)) return;
-			const call = this.ringingPeers.get(ID);
-			const lock_id = "cldelta_" + ID + "_call";
-			await navigator.locks.request(
-				lock_id,
-				{ ifAvailable: true },
-				async () => {
-					call.answer(this.myVoiceStream);
-					this.handleCall(ID, call);
-				}
-			);
-		}
-
-		handleCall(id, call) {
-			call.on("stream", (remoteStream) => {
-				if (this.ringingPeers.has(id)) this.ringingPeers.delete(id);
-				const audio = document.createElement("audio");
-				audio.srcObject = remoteStream;
-				audio.autoplay = true;
-				this.voiceConnections.set(id, {
-					call: call,
-					audio: audio,
-				});
-				audio.play();
-			});
-
-			call.on("close", () => {
-				if (this.ringingPeers.has(id)) {
-					this.ringingPeers.delete(id);
-				} else {
-					this.voiceConnections.delete(id);
-				}
-			});
-
-			call.on("error", (err) => {
-				console.warn("Call with peer " + id + " error: " + err);
-			});
-		}
-
-		doIHaveMicPerms() {
-			return this.hasMicPerms;
 		}
 	}
 
