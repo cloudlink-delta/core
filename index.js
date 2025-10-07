@@ -475,7 +475,7 @@
 							},
 							CHANNEL: {
 								type: Scratch.ArgumentType.STRING,
-								defaultValue: "blueberry",
+								defaultValue: "foobar",
 							},
 							ORDERED: {
 								type: Scratch.ArgumentType.BOOLEAN,
@@ -494,7 +494,7 @@
 							},
 							CHANNEL: {
 								type: Scratch.ArgumentType.STRING,
-								defaultValue: "default",
+								defaultValue: "foobar",
 							},
 						},
 					}
