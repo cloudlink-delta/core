@@ -234,6 +234,10 @@
 				color1: "#0F7EBD",
 				blocks: [
 					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Configuration",
+					},
+					{
 						opcode: "toggleVerboseLogs",
 						blockType: Scratch.BlockType.COMMAND,
 						text: Scratch.translate("[TOGGLE] verbose browser console logs"),
@@ -241,11 +245,15 @@
 							TOGGLE: {
 								type: Scratch.ArgumentType.NUMBER,
 								menu: "logMode",
-								defaultValue: "0",
+								defaultValue: "disable",
 							},
 						},
 					},
 					"---",
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Client state",
+					},
 					{
 						opcode: "whenPeerCreated",
 						blockType: Scratch.BlockType.EVENT,
@@ -281,6 +289,10 @@
 						text: Scratch.translate("connected to session server?"),
 					},
 					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Connectivity",
+					},
+					{
 						opcode: "createPeer",
 						blockType: Scratch.BlockType.COMMAND,
 						text: Scratch.translate("connect to session server as [ID]"),
@@ -308,69 +320,13 @@
 					},
 					"---",
 					{
-						opcode: "isOtherPeerConnected",
-						blockType: Scratch.BlockType.BOOLEAN,
-						text: Scratch.translate("connected to [ID]?"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					"---",
-					{
-						opcode: "whenPeerConnects",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate("when a peer connects"),
-					},
-					{
-						opcode: "readNewestPeerConnected",
-						blockType: Scratch.BlockType.REPORTER,
-						text: Scratch.translate("newest peer connected"),
-					},
-					{
-						opcode: "whenSpecificPeerConnects",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate("when peer [ID] connects"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
+						blockType: Scratch.BlockType.LABEL,
+						text: "Peers",
 					},
 					{
 						opcode: "connectToPeer",
 						blockType: Scratch.BlockType.COMMAND,
 						text: Scratch.translate("connect to [ID]"),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-						},
-					},
-					"---",
-					{
-						opcode: "whenPeerDisconnects",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate("when a peer disconnects"),
-					},
-
-					{
-						opcode: "readLastPeerDisconnected",
-						blockType: Scratch.BlockType.REPORTER,
-						text: Scratch.translate("last peer disconnected"),
-					},
-					{
-						opcode: "whenSpecificPeerDisconnects",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate("when peer [ID] disconnects"),
 						arguments: {
 							ID: {
 								type: Scratch.ArgumentType.STRING,
@@ -389,40 +345,14 @@
 							},
 						},
 					},
-					"---",
 					{
-						opcode: "whenPeerGetsMessage",
-						blockType: Scratch.BlockType.EVENT,
-						isEdgeActivated: false,
-						text: Scratch.translate(
-							"when I get a message from peer [ID] in channel [CHANNEL]"
-						),
+						opcode: "isOtherPeerConnected",
+						blockType: Scratch.BlockType.BOOLEAN,
+						text: Scratch.translate("connected to [ID]?"),
 						arguments: {
 							ID: {
 								type: Scratch.ArgumentType.STRING,
 								defaultValue: "B",
-							},
-							CHANNEL: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "default",
-							},
-						},
-					},
-
-					{
-						opcode: "readMessageFromPeer",
-						blockType: Scratch.BlockType.REPORTER,
-						text: Scratch.translate(
-							"message from peer [ID] in channel [CHANNEL]"
-						),
-						arguments: {
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-							CHANNEL: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "default",
 							},
 						},
 					},
@@ -441,26 +371,10 @@
 							},
 						},
 					},
+					"---",
 					{
-						opcode: "sendMessageToPeer",
-						blockType: Scratch.BlockType.COMMAND,
-						text: Scratch.translate(
-							"send [MESSAGE] to peer [ID] using channel [CHANNEL]"
-						),
-						arguments: {
-							MESSAGE: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "hello world",
-							},
-							ID: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "B",
-							},
-							CHANNEL: {
-								type: Scratch.ArgumentType.STRING,
-								defaultValue: "default",
-							},
-						},
+						blockType: Scratch.BlockType.LABEL,
+						text: "Channels",
 					},
 					{
 						opcode: "openNewPeerChannel",
@@ -497,18 +411,130 @@
 								defaultValue: "foobar",
 							},
 						},
-					}
+					},
+					"---",
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Peer events",
+					},
+					{
+						opcode: "whenPeerConnects",
+						blockType: Scratch.BlockType.EVENT,
+						isEdgeActivated: false,
+						text: Scratch.translate("when a peer connects"),
+					},
+					{
+						opcode: "readNewestPeerConnected",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate("newest peer connected"),
+					},
+					{
+						opcode: "whenSpecificPeerConnects",
+						blockType: Scratch.BlockType.EVENT,
+						isEdgeActivated: false,
+						text: Scratch.translate("when peer [ID] connects"),
+						arguments: {
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+						},
+					},
+					{
+						opcode: "whenPeerDisconnects",
+						blockType: Scratch.BlockType.EVENT,
+						isEdgeActivated: false,
+						text: Scratch.translate("when a peer disconnects"),
+					},
+					{
+						opcode: "readLastPeerDisconnected",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate("last peer disconnected"),
+					},
+					{
+						opcode: "whenSpecificPeerDisconnects",
+						blockType: Scratch.BlockType.EVENT,
+						isEdgeActivated: false,
+						text: Scratch.translate("when peer [ID] disconnects"),
+						arguments: {
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+						},
+					},
+					"---",
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Packets",
+					},
+					{
+						opcode: "whenPeerGetsPacket",
+						blockType: Scratch.BlockType.EVENT,
+						isEdgeActivated: false,
+						text: Scratch.translate(
+							"when I get a packet from peer [ID] in channel [CHANNEL]"
+						),
+						arguments: {
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+							CHANNEL: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "default",
+							},
+						},
+					},
+					{
+						opcode: "readPacketFromPeer",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate(
+							"packet from peer [ID] in channel [CHANNEL]"
+						),
+						arguments: {
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+							CHANNEL: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "default",
+							},
+						},
+					},
+					{
+						opcode: "sendMessageToPeer",
+						blockType: Scratch.BlockType.COMMAND,
+						text: Scratch.translate(
+							"send [MESSAGE] to peer [ID] using channel [CHANNEL]"
+						),
+						arguments: {
+							MESSAGE: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "hello world",
+							},
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+							CHANNEL: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "default",
+							},
+						},
+					},
 				],
 				menus: {
 					logMode: {
 						items: [
 							{
 								text: Scratch.translate("disable"),
-								value: "0",
+								value: 0,
 							},
 							{
 								text: Scratch.translate("enable"),
-								value: "1",
+								value: 1,
 							},
 						],
 					},
@@ -550,7 +576,7 @@
 
 				case "P_MSG":
 					conn.channels.get(chan.label).data = payload;
-					Scratch.vm.runtime.startHats("cldeltacore_whenPeerGetsMessage");
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerGetsPacket");
 					break;
 
 				case "NEW_CHAN":
@@ -759,14 +785,12 @@
 		}
 
         closePeerChannel({ ID, CHANNEL }) {
-            ID = Scratch.Cast.toString(ID);
+			ID = Scratch.Cast.toString(ID);
 			CHANNEL = Scratch.Cast.toString(CHANNEL);
 			if (!this.isPeerConnected()) return;
 			if (!this.dataConnections.has(ID)) return;
-            const chan = this.dataConnections.get(ID).channels.get(CHANNEL).chan;
-            chan.close();
-            this.dataConnections.get(ID).channels.delete(CHANNEL);
-        }
+			this.dataConnections.get(ID).channels.get(CHANNEL).chan.close();
+		}
 
 		async openNewPeerChannel({ ID, CHANNEL, ORDERED }) {
 			ID = Scratch.Cast.toString(ID);
@@ -860,7 +884,7 @@
 			return !this.peer.disconnected && !this.peer.destroyed;
 		}
 
-		whenPeerGetsMessage({ ID, CHANNEL }) {
+		whenPeerGetsPacket({ ID, CHANNEL }) {
 			return this.doesPeerHaveChannel({
 				ID: Scratch.Cast.toString(ID),
 				CHANNEL,
@@ -883,7 +907,7 @@
 			return conn.channels.has(CHANNEL);
 		}
 
-		readMessageFromPeer({ ID, CHANNEL }) {
+		readPacketFromPeer({ ID, CHANNEL }) {
 			ID = Scratch.Cast.toString(ID);
 			if (!this.peer) return "";
 			const conn = this.dataConnections.get(ID);
