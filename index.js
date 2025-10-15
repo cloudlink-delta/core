@@ -687,6 +687,9 @@
 		createPeer({ ID }) {
 			ID = Scratch.Cast.toString(ID);
 			this.peer = new Peer(ID, {
+				host: "peerjs.mikedev101.cc",
+				port: 443,
+				secure: true,
 				config: {
 					iceTransportPolicy: "all",
 					iceServers: [
