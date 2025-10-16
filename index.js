@@ -32,6 +32,18 @@
 
 (function (Scratch) {
 	"use strict";
+
+	// DO NOT INCREMENT THIS VALUE UNLESS A SIGNIFICANT CHANGE TO THE PROTOCOL IS INTENDED
+	const DIALECT_REVISION = 0;
+
+	// Extension version information
+	const EXTENSION_VERSION = {
+		type: "Scratch", // Do not change this
+		major: 1,
+		minor: 0,
+		patch: 0,
+	};
+
 	const blockIcon =
 		"data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%22312%22%20height%3D%22218%22%20viewBox%3D%220%200%20312%20218%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M155.88%200C194.829%200.000212318%20226.786%2030.1084%20229.987%2068.4414H237.391C278.466%2068.4414%20311.759%20101.922%20311.759%20143.221C311.759%20184.52%20278.466%20218%20237.391%20218H74.3682C33.2934%20218%200%20184.52%200%20143.221C0.000123011%20101.922%2033.2935%2068.4415%2074.3682%2068.4414H81.7715C84.9733%2030.1082%20116.931%200%20155.88%200ZM155.88%2010C122.221%2010%2094.5136%2036.0335%2091.7373%2069.2744L90.9717%2078.4414H74.3682C38.8684%2078.4415%2010.0001%20107.392%2010%20143.221C10%20179.049%2038.8683%20208%2074.3682%20208H237.391C272.891%20208%20301.759%20179.049%20301.759%20143.221C301.759%20107.392%20272.891%2078.4414%20237.391%2078.4414H220.788L220.023%2069.2744C217.246%2036.0337%20189.539%2010.0002%20155.88%2010Z%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M109.5%20180V172.5L149.85%2072.4502H162L202.2%20172.5V180H109.5ZM124.95%20167.85H186.6L161.55%20102.45C161.25%20101.65%20160.7%20100.2%20159.9%2098.1002C159.1%2096.0002%20158.3%2093.8502%20157.5%2091.6502C156.8%2089.3502%20156.25%2087.6002%20155.85%2086.4002C155.35%2088.4002%20154.75%2090.4502%20154.05%2092.5502C153.45%2094.5502%20152.8%2096.4002%20152.1%2098.1002C151.5%2099.8002%20151%20101.25%20150.6%20102.45L124.95%20167.85Z%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E";
 
@@ -116,104 +128,104 @@
 
 	// Ah yes, Perry the platypus. It seems you've found my callback-inator. 
 	class CallbackInator {
-        constructor() {
-            this.calls = new Map();
-            this.debug = 0;
-        }
+		constructor() {
+			this.calls = new Map();
+			this.debug = 0;
+		}
 
-        /**
-         * Sets the debug level for the CallbackInator.
-         *
-         * @param {number} level - The desired debug level. Higher numbers enable more verbose logging.
-         * 
-         * Adjust the verbosity of logging for debugging purposes. A higher level means more detailed logs.
-         */
-        set_debug_level(level) {
-            this.debug = level;
-        }
+		/**
+		 * Sets the debug level for the CallbackInator.
+		 *
+		 * @param {number} level - The desired debug level. Higher numbers enable more verbose logging.
+		 * 
+		 * Adjust the verbosity of logging for debugging purposes. A higher level means more detailed logs.
+		 */
+		set_debug_level(level) {
+			this.debug = level;
+		}
 
-        /**
-         * Unbinds a callback function from a specified event name.
-         * @param {string} name - The name of the event to unbind the callback from.
-         * @param {string} id - The ID of the callback to unbind. If set to "*", all callbacks for the event will be unbound.
-         * @returns {void}
-         * 
-         * Does nothing if the callback was never bound.
-         */
-        unbind(name, id) {
-            if (id == "*") {
-                this.calls.delete(name);
-                if (this.debug > 2) console.log(`Unbound all callbacks for "${name}"`);
-                return;
-            }
-            if (!this.calls.has(name) || !this.calls.get(name).has(id)) return;
-            this.calls.get(name).delete(id);
-            if (this.debug > 2) console.log(`Unbound callback for "${name}" with ID "${id}"`);
-        }
+		/**
+		 * Unbinds a callback function from a specified event name.
+		 * @param {string} name - The name of the event to unbind the callback from.
+		 * @param {string} id - The ID of the callback to unbind. If set to "*", all callbacks for the event will be unbound.
+		 * @returns {void}
+		 * 
+		 * Does nothing if the callback was never bound.
+		 */
+		unbind(name, id) {
+			if (id == "*") {
+				this.calls.delete(name);
+				if (this.debug > 2) console.log(`Unbound all callbacks for "${name}"`);
+				return;
+			}
+			if (!this.calls.has(name) || !this.calls.get(name).has(id)) return;
+			this.calls.get(name).delete(id);
+			if (this.debug > 2) console.log(`Unbound callback for "${name}" with ID "${id}"`);
+		}
 
-        /**
-         * Binds a callback function to a specified event name.
-         *
-         * @param {string} name - The name of the event to bind the callback to.
-         * @param {function} callback - The function to be called when the event is triggered.
-         * @param {string} [id="default"] - An optional identifier for the callback.
-         * @throws {TypeError} If the provided callback is not a function.
-         */
-        bind(name, callback, id = "default") {
-            if (!this.calls.has(name)) {
-                this.calls.set(name, new Map());
-            }
-            if (typeof callback !== 'function') {
-                if (this.debug > 0) console.error('Callback must be a function');
-                return;
-            }
-            this.calls.get(name).set(id, callback);
-            if (this.debug > 2) console.log(`Bound callback for "${name}" with ID "${id}"`);
-        }
+		/**
+		 * Binds a callback function to a specified event name.
+		 *
+		 * @param {string} name - The name of the event to bind the callback to.
+		 * @param {function} callback - The function to be called when the event is triggered.
+		 * @param {string} [id="default"] - An optional identifier for the callback.
+		 * @throws {TypeError} If the provided callback is not a function.
+		 */
+		bind(name, callback, id = "default") {
+			if (!this.calls.has(name)) {
+				this.calls.set(name, new Map());
+			}
+			if (typeof callback !== 'function') {
+				if (this.debug > 0) console.error('Callback must be a function');
+				return;
+			}
+			this.calls.get(name).set(id, callback);
+			if (this.debug > 2) console.log(`Bound callback for "${name}" with ID "${id}"`);
+		}
 
-        /**
-         * Executes all registered callbacks for a given event name with the provided arguments.
-         *
-         * @param {string} name - The name of the event whose callbacks should be executed.
-         * @param {...*} args - Arguments to pass to the callbacks.
-         * @returns {void}
-         *
-         * Logs warnings if there are no callbacks registered, if the callbacks map is null,
-         * if the callbacks map is empty, or if any callback is not a function. Logs an error
-         * if the registered callback is not a map.
-         */
-        call(name, ...args) {
-            if (!this.calls.has(name)) {
-                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
-                return;
-            };
-            if (this.calls.get(name) === null) {
-                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
-                return;
-            }
-            if (this.calls.get(name).size === 0) {
-                if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
-                return;
-            }
-            if (!(this.calls.get(name) instanceof Map)) {
-                if (this.debug > 0) console.error("Callback was not a map! Got ", typeof this.calls.get(name), "instead.");
-                return;
-            }
-            if (this.debug > 2) console.log(`Executing callbacks for "${name}"`);
-            for (const callback of this.calls.get(name).values()) {
-                if (callback === null || typeof callback !== 'function') {
-                    if (this.debug > 1) console.warn(`Callback registered for "${name}" is null or not a function`);
-                    continue;
-                }
-                try {
-                    if (this.debug > 2) console.log(`Executing callback ${callback}"`);
-                    callback(...args);
-                } catch (error) {
-                    if (this.debug > 0) console.error(`Error executing callback for "${name}"`, error);
-                }
-            }
-        }
-    }
+		/**
+		 * Executes all registered callbacks for a given event name with the provided arguments.
+		 *
+		 * @param {string} name - The name of the event whose callbacks should be executed.
+		 * @param {...*} args - Arguments to pass to the callbacks.
+		 * @returns {void}
+		 *
+		 * Logs warnings if there are no callbacks registered, if the callbacks map is null,
+		 * if the callbacks map is empty, or if any callback is not a function. Logs an error
+		 * if the registered callback is not a map.
+		 */
+		call(name, ...args) {
+			if (!this.calls.has(name)) {
+				if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+				return;
+			};
+			if (this.calls.get(name) === null) {
+				if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+				return;
+			}
+			if (this.calls.get(name).size === 0) {
+				if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`);
+				return;
+			}
+			if (!(this.calls.get(name) instanceof Map)) {
+				if (this.debug > 0) console.error("Callback was not a map! Got ", typeof this.calls.get(name), "instead.");
+				return;
+			}
+			if (this.debug > 2) console.log(`Executing callbacks for "${name}"`);
+			for (const callback of this.calls.get(name).values()) {
+				if (callback === null || typeof callback !== 'function') {
+					if (this.debug > 1) console.warn(`Callback registered for "${name}" is null or not a function`);
+					continue;
+				}
+				try {
+					if (this.debug > 2) console.log(`Executing callback ${callback}"`);
+					callback(...args);
+				} catch (error) {
+					if (this.debug > 0) console.error(`Error executing callback for "${name}"`, error);
+				}
+			}
+		}
+	}
 
 	class CloudLinkDelta_Core {
 		constructor() {
@@ -223,8 +235,23 @@
 			this.lastDisconnected = "";
 			this.verboseLogs = false;
 			this.callbacks = new CallbackInator();
+			this.plugins = new Array(); // []string
+			this.remapper = new Map(); // map[string] function
 		}
 
+		/**
+		 * Returns an object containing information about the CLΔ Core extension.
+		 *
+		 * @return {{
+		 *   id: string,
+		 *   name: string,
+		 *   menuIconURI: string,
+		 *   blockIconURI: string,
+		 *   color1: string,
+		 *   blocks: Array<Block>,
+		 *   menus: Object
+		 * }}
+		 */
 		getInfo() {
 			return {
 				id: "cldeltacore",
@@ -233,6 +260,15 @@
 				blockIconURI: blockIcon,
 				color1: "#0F7EBD",
 				blocks: [
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Extension v" + EXTENSION_VERSION.major + "." + EXTENSION_VERSION.minor + "." + EXTENSION_VERSION.patch,
+					},
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Dialect revision " + DIALECT_REVISION,
+					},
+					"---",
 					{
 						blockType: Scratch.BlockType.LABEL,
 						text: "Configuration",
@@ -543,15 +579,65 @@
 		}
 
 		// Internal functions that aren't mapped to blocks
-		handleChannelOpen(conn, chan) {
+
+		/**
+		 * Maps a key to a function that will be called when the corresponding block
+		 * is invoked. If a function is already mapped to the key, it will
+		 * be replaced with the new one. Intended for use with plugins.
+		 *
+		 * @param {string} key - The key of the block to be remapped.
+		 * @param {function} func - The function to be called when the block is invoked.
+		 */
+		_remap(key, func) {
+			this.remapper.set(key, func);
+		}
+
+		/**
+		 * Checks if a key is already mapped to a function in the remapper.
+		 * @param {string} key - The key to check for.
+		 * @returns {boolean} - True if the key is mapped, false otherwise.
+		 */
+		_isRemapped(key) {
+			return this.remapper.has(key);
+		}
+
+		/**
+		 * Calls a function remapped to a key if it exists in the remapper.
+		 * If the key is not mapped, it does nothing.
+		 * @param {string} key - The key of the function to be called.
+		 * @param {...any} args - The arguments to be passed to the remapped function.
+		 * @returns {any} - The return value of the remapped function if it exists, undefined otherwise.
+		 */
+		_callRemapped(key, ...args) {
+			return this.remapper.get(key)(...args);
+		}
+
+		/**
+		 * Handles a channel open event by adding the channel to the connection's
+		 * channel map and setting its data to an empty string.
+		 * @param {Object} conn - The connection object.
+		 * @param {Object} chan - The channel object.
+		 */
+		_handleChannelOpen(conn, chan) {
 			conn.channels.set(chan.label, { chan, data: "" });
 		}
 
-		handleChannelClose(conn, chan) {
+		/**
+		 * Handles a channel close event by deleting the channel from the connection's channel map.
+		 * @param {Object} conn - The connection object.
+		 * @param {Object} chan - The channel object.
+		 */
+		_handleChannelClose(conn, chan) {
 			conn.channels.delete(chan.label);
 		}
 
-		handleChannelError(conn, chan, err) {
+		/**
+		 * Handles a channel error event by logging the error and setting the peer's error info to the error.
+		 * @param {Object} conn - The connection object.
+		 * @param {Object} chan - The channel object.
+		 * @param {Error} err - The error that occurred.
+		 */
+		_handleChannelError(conn, chan, err) {
 			console.warn(
 				"Channel " + chan.label + " error with peer " + conn.peer + ":",
 				err
@@ -560,19 +646,127 @@
 			Scratch.vm.runtime.startHats("cldeltacore_whenPeerError");
 		}
 
-		// Ensure a default logical channel mapping exists for a CloudLink Delta connection
-		ensureDefaultChannel(conn) {
+		/**
+		 * Ensures that the given connection has a default channel.
+		 * If the connection's channel map is null, it is set to a new Map.
+		 * If the default channel is not present in the channel map, it is added with the connection itself as the channel and an empty string as the channel data.
+		 * @param {Object} conn - The connection object.
+		 */
+		_ensureDefaultChannel(conn) {
 			if (!conn.channels) conn.channels = new Map();
 			if (!conn.channels.has("default")) {
 				conn.channels.set("default", { chan: conn, data: "" });
 			}
 		}
 
-		async handleChannelData(conn, chan, data) {
+		/**
+		 * Handles a data connection event by adding event listeners for the "open", "close", "error", and "data" events.
+		 * The "open" event is handled by ensuring that the connection has a default channel and sending the negate packet.
+		 * The "close" event is handled by removing the default channel from the connection's channel map.
+		 * The "error" event is handled by logging the error and setting the peer's error info to the error.
+		 * The "data" event is handled by reading the data from the channel and forwarding it to the channel's data handler.
+		 * @param {Object} conn - The connection object.
+		 */
+		_handleDataConnection(conn) {
+			conn.on("open", () => {
+				this._ensureDefaultChannel(conn);
+				const defaultchan = conn.channels.get("default").chan;
+				this._handleChannelOpen(conn, defaultchan);
+				defaultchan.send(JSON.stringify({
+					opcode: "NEGOTIATE",
+					payload: {
+						plugins: this.plugins,
+						version: EXTENSION_VERSION,
+						spec_version: DIALECT_REVISION,
+						is_relay: false,
+						is_discovery: false,
+					},
+				}));
+
+				if (conn.label === "default") {
+					console.log("Peer " + conn.peer + " connected.");
+					this.newestConnected = conn.peer;
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerConnects");
+					Scratch.vm.runtime.startHats(
+						"cldeltacore_whenSpecificPeerConnects"
+					);
+				} else {
+					console.warn("Peer " + conn.peer + " connected, but is using a non-default channel.");
+				}
+			});
+
+			conn.on("close", () => {
+				if (conn.channels && conn.channels.has("default")) {
+					this._handleChannelClose(conn, conn.channels.get("default").chan);
+				} else {
+					this._handleChannelClose(conn, conn);
+				}
+				if (conn.label === "default") {
+					this.lastDisconnected = conn.peer;
+					this.dataConnections.delete(conn.peer);
+					/* if (this.voiceConnections.has(conn.peer)) {
+						this.voiceConnections.get(conn.peer).call.close();
+					}*/
+					console.log("Peer " + conn.peer + " disconnected.");
+					Scratch.vm.runtime.startHats("cldeltacore_whenPeerDisconnects");
+					Scratch.vm.runtime.startHats("cldeltacore_whenSpecificPeerDisconnects");
+				}
+			});
+
+			conn.on("error", (err) => {
+				this._handleChannelError(conn, conn, err);
+			});
+
+			conn.on("data", async (msg) => {
+				this._ensureDefaultChannel(conn);
+				const defaultchan = conn.channels.get("default").chan;
+				await this._dataChanStreamReader(conn, defaultchan, msg);
+			});
+		}
+
+		/**
+		 * Handles a channel data event and processes the data based on the opcode.
+		 * @param {Object} conn - The connection object.
+		 * @param {Object} chan - The channel object.
+		 * @param {Object} data - The data object containing the opcode and payload.
+		 */
+		async _handleChannelData(conn, chan, data) {
 			const { opcode, payload } = data;
-			if (this.verboseLogs) console.log(conn.peer, chan.label, data);
+			console.log(conn.peer, chan.label, data);
 			switch (opcode) {
-				// TODO: implement other opcodes based on the CL5 spec
+			
+				// TODO: implement other opcodes based on the CL5.1 provisional spec
+
+				case "NEGOTIATE":
+					if (chan.label !== "default") {
+						console.warn(
+							"Attempted to call NEGOTIATE on non-default channel " +
+							chan.label +
+							" with peer " +
+							conn.peer
+						);
+						return;
+					}
+
+					console.log("Peer " + conn.peer + " is using dialect revision " + payload.spec_version + " on " + payload.version.type + " (v" + payload.version.major + "." + payload.version.minor + "." + payload.version.patch + ")");
+					if (payload.plugins.length > 0) console.log("Peer " + conn.peer + " advertises the following plugins: " + Array.from(payload.plugins).join(", "));
+					
+					let advertised_features = new Set();
+					if (payload.is_bridge) {
+						advertised_features.add("bridge");
+						// TODO: request list of bridged peers and their CL versions/dialects for translation
+					}
+					if (payload.is_relay) {
+						advertised_features.add("relay");
+						// TODO: reconfigure routes to use relay for broadcasts
+					}
+					if (payload.is_discovery) {
+						advertised_features.add("discovery");
+						// TODO: hook into discovery plugin (if present)
+					}
+					
+					if (advertised_features.size > 0) console.log("Peer " + conn.peer + " advertises the following features: " + Array.from(advertised_features).join(", "));
+					break;
 
 				case "P_MSG":
 					conn.channels.get(chan.label).data = payload;
@@ -607,21 +801,8 @@
 						// Synchronize channel ID counter
 						conn.idCounter = id;
 
-						newchan.onopen = () => {
-							this.handleChannelOpen(conn, newchan);
-						};
-
-						newchan.onclose = () => {
-							this.handleChannelClose(conn, newchan);
-						};
-
-						newchan.onerror = (err) => {
-							this.handleChannelError(conn, newchan, err);
-						};
-
-						newchan.onmessage = async (msg) => {
-							await this.handleChannelData(conn, newchan, JSON.parse(msg.data));
-						};
+						// Bind handlers to channel
+						this._chanMethodBinder(conn, newchan);
 
 						// Store channel reference
 						conn.channels.set(label, {
@@ -637,54 +818,53 @@
 			}
 		}
 
-		// CloudLink Delta connection event handlers
-		handleDataConnection(conn) {
-			conn.on("open", () => {
-				this.ensureDefaultChannel(conn);
-				this.handleChannelOpen(conn, conn.channels.get("default").chan);
-				if (conn.label === "default") {
-					this.newestConnected = conn.peer;
-					Scratch.vm.runtime.startHats("cldeltacore_whenPeerConnects");
-					Scratch.vm.runtime.startHats(
-						"cldeltacore_whenSpecificPeerConnects"
-					);
-				}
-			});
+		/**
+		 * Bind event listeners to a PeerJS DataChannel.
+		 *
+		 * @param {PeerJS.DataConnection} conn - The PeerJS DataConnection to bind events to.
+		 * @param {PeerJS.DataChannel} chan - The PeerJS DataChannel to bind events to.
+		 */
+		_chanMethodBinder(conn, chan) {
+			chan.onopen = () => {
+				this._handleChannelOpen(conn, chan);
+			};
 
-			conn.on("close", () => {
-				if (conn.channels && conn.channels.has("default")) {
-					this.handleChannelClose(conn, conn.channels.get("default").chan);
-				} else {
-					this.handleChannelClose(conn, conn);
-				}
-				if (conn.label === "default") {
-					this.lastDisconnected = conn.peer;
-					this.dataConnections.delete(conn.peer);
-					/* if (this.voiceConnections.has(conn.peer)) {
-						this.voiceConnections.get(conn.peer).call.close();
-					}*/
-					Scratch.vm.runtime.startHats("cldeltacore_whenPeerDisconnects");
-					Scratch.vm.runtime.startHats(
-						"cldeltacore_whenSpecificPeerDisconnects"
-					);
-				}
-			});
+			chan.onclose = () => {
+				this._handleChannelClose(conn, chan);
+			};
 
-			conn.on("error", (err) => {
-				this.handleChannelError(conn, conn, err);
-			});
+			chan.onerror = (err) => {
+				this._handleChannelError(conn, chan, err);
+			};
 
-			conn.on("data", async (data) => {
-				this.ensureDefaultChannel(conn);
-				await this.handleChannelData(conn, conn.channels.get("default").chan, JSON.parse(data));
-			});
+			chan.onmessage = async (msg) => {
+				await this._dataChanStreamReader(conn, chan, msg);
+			};
 		}
 
+		/**
+		 * Reads data from a PeerJS DataChannel and handles it by calling the relevant event handlers.
+		 * @param {Object} conn - The connection object.
+		 * @param {Object} chan - The channel object.
+		 * @param {Object} data - The data object containing the opcode and payload.
+		 */
+		async _dataChanStreamReader(conn, chan, data) {
+			if (data instanceof Object) {
+				await this._handleChannelData(conn, chan, data);
+			} else if (typeof (data) === "string") {
+				await this._handleChannelData(conn, chan, JSON.parse(data));
+			} else {
+				console.error("Unknown data type: " + typeof (data));
+			}
+		}
+
+		// Functions that are mapped to blocks
 		toggleVerboseLogs({ TOGGLE }) {
 			this.verboseLogs = Scratch.Cast.toNumber(TOGGLE) ? true : false;
 		}
 
 		createPeer({ ID }) {
+			if (this.peer) return;
 			ID = Scratch.Cast.toString(ID);
 			this.peer = new Peer(ID, {
 				host: "peerjs.mikedev101.cc",
@@ -726,9 +906,9 @@
 			this.peer.on("connection", (conn) => {
 				conn.idCounter = 2;
 				conn.channels = new Map();
-				this.ensureDefaultChannel(conn);
+				this._ensureDefaultChannel(conn);
 				this.dataConnections.set(conn.peer, conn);
-				this.handleDataConnection(conn);
+				this._handleDataConnection(conn);
 			});
 
 			this.peer.on("call", async (call) => {
@@ -764,13 +944,15 @@
 			if (this.dataConnections.has(ID)) return;
 			const conn = this.peer.connect(ID, {
 				label: "default",
+				metadata: {}, // TODO
 				reliable: true,
+				serialization: "json",
 			});
 			this.dataConnections.set(conn.peer, conn);
 			conn.idCounter = 2;
 			conn.channels = new Map();
-			this.ensureDefaultChannel(conn);
-			this.handleDataConnection(conn);
+			this._ensureDefaultChannel(conn);
+			this._handleDataConnection(conn);
 		}
 
 		disconnectFromPeer({ ID }) {
@@ -787,7 +969,7 @@
 			return !this.dataConnections.get(ID).disconnected;
 		}
 
-        closePeerChannel({ ID, CHANNEL }) {
+		closePeerChannel({ ID, CHANNEL }) {
 			ID = Scratch.Cast.toString(ID);
 			CHANNEL = Scratch.Cast.toString(CHANNEL);
 			if (!this.isPeerConnected()) return;
@@ -814,21 +996,8 @@
 					id: id,
 				});
 
-				chan.onopen = () => {
-					this.handleChannelOpen(conn, chan);
-				};
-
-				chan.onclose = () => {
-					this.handleChannelClose(conn, chan);
-				};
-
-				chan.onerror = (err) => {
-					this.handleChannelError(conn, chan, err);
-				};
-
-				chan.onmessage = async (msg) => {
-					await this.handleChannelData(conn, chan, JSON.parse(msg.data));
-				};
+				// Bind handlers to the channel
+				this._chanMethodBinder(conn, chan);
 
 				// Store channel reference
 				conn.channels.set(CHANNEL, {
@@ -837,7 +1006,7 @@
 				});
 
 				// Tell the peer about the new channel
-				this.ensureDefaultChannel(conn);
+				this._ensureDefaultChannel(conn);
 				conn.channels.get("default").chan.send(
 					JSON.stringify({
 						opcode: "NEW_CHAN",
@@ -880,6 +1049,7 @@
 		destroyPeer() {
 			if (!this.peer) return;
 			if (!this.peer.destroyed) this.peer.destroy();
+			this.peer = null;
 		}
 
 		isPeerConnected() {
