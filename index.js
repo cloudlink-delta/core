@@ -230,6 +230,7 @@
 	class CloudLinkDelta_Core {
 		constructor() {
 			this.peer;
+			this.name = "";
 			this.dataConnections = new Map();
 			this.newestConnected = "";
 			this.lastDisconnected = "";
@@ -674,6 +675,7 @@
 				this._handleChannelOpen(conn, defaultchan);
 				defaultchan.send(JSON.stringify({
 					opcode: "NEGOTIATE",
+					ttl: 1,
 					payload: {
 						plugins: this.plugins,
 						version: EXTENSION_VERSION,
@@ -732,6 +734,15 @@
 		 */
 		async _handleChannelData(conn, chan, data) {
 			const { opcode, payload } = data;
+			var { ttl } = data;
+
+			// Drop packets with expired TTL
+			ttl--;
+			if (ttl < 0) {
+				console.warn("Dropping packet \"" + opcode + "\": TTL expired");
+				return;
+			}
+
 			console.log(conn.peer, chan.label, data);
 			switch (opcode) {
 			
@@ -863,9 +874,11 @@
 			this.verboseLogs = Scratch.Cast.toNumber(TOGGLE) ? true : false;
 		}
 
+
 		createPeer({ ID }) {
 			if (this.peer) return;
 			ID = Scratch.Cast.toString(ID);
+			this.name = ID;
 			this.peer = new Peer(ID, {
 				host: "peerjs.mikedev101.cc",
 				port: 443,
@@ -904,6 +917,13 @@
 			});
 
 			this.peer.on("connection", (conn) => {
+				if (!conn.metadata) {
+					console.warn("Peer " + conn.peer + " did not set their metadata!!!");
+				}
+				if (!conn.metadata.protocol || (conn.metadata.protocol !== "delta")) {
+					console.warn("Peer " + conn.peer + " did not passthrough the 'delta' protocol in their metadata!!!");
+				}
+				
 				conn.idCounter = 2;
 				conn.channels = new Map();
 				this._ensureDefaultChannel(conn);
@@ -944,7 +964,10 @@
 			if (this.dataConnections.has(ID)) return;
 			const conn = this.peer.connect(ID, {
 				label: "default",
-				metadata: {}, // TODO
+				metadata: {
+					name: this.name,
+					protocol: "delta", // REQUIRED
+				},
 				reliable: true,
 				serialization: "json",
 			});
@@ -1010,6 +1033,7 @@
 				conn.channels.get("default").chan.send(
 					JSON.stringify({
 						opcode: "NEW_CHAN",
+						ttl: 1,
 						payload: {
 							id: id,
 							label: CHANNEL,
@@ -1030,6 +1054,7 @@
 				const packet = JSON.stringify({
 					opcode: "P_MSG",
 					payload: MESSAGE,
+					ttl: 1,
 				});
 				conn.channels.get(CHANNEL).chan.send(packet);
 				resolve();
