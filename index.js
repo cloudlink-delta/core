@@ -762,7 +762,7 @@
 				const handleStats = async () => {
 					try {
 						// Read default channel statistics
-						const stats = await conn.peer.dataConnection.getStats();
+						const stats = await conn.peer.peerConnection.getStats();
 						for (const stat of stats) {
 							if (stat.type === "inbound-rtp") {
 								conn.incomingBitrate = stat.bitsPerSecond;
