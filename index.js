@@ -761,7 +761,8 @@
 				// Create a background job to periodically call getStats() and read RTT, outgoing/incoming bitrate
 				const handleStats = async () => {
 					try {
-						const stats = await conn.peer.getStats();
+						// Read default channel statistics
+						const stats = await conn.peer.dataConnection.getStats();
 						for (const stat of stats) {
 							if (stat.type === "inbound-rtp") {
 								conn.incomingBitrate = stat.bitsPerSecond;
