@@ -238,6 +238,7 @@
 			this.callbacks = new CallbackInator();
 			this.plugins = new Array(); // []string
 			this.remapper = new Map(); // map[string] function
+			this.taskQueue = new Map(); // map[peer] function
 		}
 
 		/**
@@ -561,6 +562,55 @@
 							},
 						},
 					},
+					{
+						opcode: "sendMessageToAllPeers",
+						blockType: Scratch.BlockType.COMMAND,
+						text: Scratch.translate(
+							"send [MESSAGE] everyone using channel [CHANNEL]"
+						),
+						arguments: {
+							MESSAGE: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "hello world",
+							},
+							CHANNEL: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "default",
+							},
+						},
+					},
+					"---",
+					{
+						blockType: Scratch.BlockType.LABEL,
+						text: "Routing",
+					},
+					{
+						opcode: "getRTT",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate("Estimated RTT latency with peer [ID] (in ms)"),
+						arguments: {
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+						},
+					},
+					{
+						opcode: "getBitrate",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate("[TYPE] bitrate with peer [ID] (in kbps)"),
+						arguments: {
+							TYPE: {
+								type: Scratch.ArgumentType.NUMBER,
+								menu: "bitrate",
+								defaultValue: "outgoing",
+							},
+							ID: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "B",
+							},
+						},
+					},
 				],
 				menus: {
 					logMode: {
@@ -575,6 +625,18 @@
 							},
 						],
 					},
+					bitrate: {
+						items: [
+							{
+								text: Scratch.translate("outgoing"),
+								value: 0,
+							},
+							{
+								text: Scratch.translate("incoming"),
+								value: 1,
+							}
+						]
+					}
 				},
 			};
 		}
@@ -695,6 +757,31 @@
 				} else {
 					console.warn("Peer " + conn.peer + " connected, but is using a non-default channel.");
 				}
+
+				// Create a background job to periodically call getStats() and read RTT, outgoing/incoming bitrate
+				const handleStats = async () => {
+					try {
+						const stats = await conn.peer.getStats();
+						for (const stat of stats) {
+							if (stat.type === "inbound-rtp") {
+								conn.incomingBitrate = stat.bitsPerSecond;
+								console.log("Peer " + conn.peer + " incoming bitrate:", conn.incomingBitrate);
+							}
+							if (stat.type === "outbound-rtp") {
+								conn.outgoingBitrate = stat.bitsPerSecond;
+								console.log("Peer " + conn.peer + " outgoing bitrate:", conn.outgoingBitrate);
+							}
+							if (stat.type === "transport") {
+								conn.rtt = stat.roundTripTime;
+								console.log("Peer " + conn.peer + " RTT:", conn.rtt);
+							}
+						}
+					} catch (error) {
+						console.error("Error getting stats:", error);
+					}
+				};
+
+				this.taskQueue.set(conn.peer, setInterval(handleStats, 5000));
 			});
 
 			conn.on("close", () => {
@@ -709,6 +796,8 @@
 					/* if (this.voiceConnections.has(conn.peer)) {
 						this.voiceConnections.get(conn.peer).call.close();
 					}*/
+					clearInterval(this.taskQueue.get(conn.peer));
+					this.taskQueue.delete(conn.peer);
 					console.log("Peer " + conn.peer + " disconnected.");
 					Scratch.vm.runtime.startHats("cldeltacore_whenPeerDisconnects");
 					Scratch.vm.runtime.startHats("cldeltacore_whenSpecificPeerDisconnects");
@@ -745,7 +834,7 @@
 
 			console.log(conn.peer, chan.label, data);
 			switch (opcode) {
-			
+
 				// TODO: implement other opcodes based on the CL5.1 provisional spec
 
 				case "NEGOTIATE":
@@ -761,7 +850,7 @@
 
 					console.log("Peer " + conn.peer + " is using dialect revision " + payload.spec_version + " on " + payload.version.type + " (v" + payload.version.major + "." + payload.version.minor + "." + payload.version.patch + ")");
 					if (payload.plugins.length > 0) console.log("Peer " + conn.peer + " advertises the following plugins: " + Array.from(payload.plugins).join(", "));
-					
+
 					let advertised_features = new Set();
 					if (payload.is_bridge) {
 						advertised_features.add("bridge");
@@ -775,7 +864,7 @@
 						advertised_features.add("discovery");
 						// TODO: hook into discovery plugin (if present)
 					}
-					
+
 					if (advertised_features.size > 0) console.log("Peer " + conn.peer + " advertises the following features: " + Array.from(advertised_features).join(", "));
 					break;
 
@@ -923,9 +1012,14 @@
 				if (!conn.metadata.protocol || (conn.metadata.protocol !== "delta")) {
 					console.warn("Peer " + conn.peer + " did not passthrough the 'delta' protocol in their metadata!!!");
 				}
-				
+
+				// Define properties to use
 				conn.idCounter = 2;
 				conn.channels = new Map();
+				conn.rtt = 0;
+				conn.outgoingBitrate = 0;
+				conn.incomingBitrate = 0;
+
 				this._ensureDefaultChannel(conn);
 				this.dataConnections.set(conn.peer, conn);
 				this._handleDataConnection(conn);
@@ -1047,6 +1141,13 @@
 		async sendMessageToPeer({ MESSAGE, ID, CHANNEL }) {
 			ID = Scratch.Cast.toString(ID);
 			if (!this.peer) return;
+
+			// TODO: implement routing.
+			// Need to periodically compute a weighted routing table
+			// based on RTTs between connected peers. Then use that
+			// to either directly send the message to the peer, or
+			// specify a route path.
+
 			if (!this.dataConnections.has(ID)) return;
 			const conn = this.dataConnections.get(ID);
 			if (!conn.channels.has(CHANNEL)) return;
@@ -1059,6 +1160,46 @@
 				conn.channels.get(CHANNEL).chan.send(packet);
 				resolve();
 			});
+		}
+
+		async sendMessageToAllPeers({ MESSAGE, CHANNEL }) {
+			if (!this.peer) return;
+
+			// TODO: implement hook for potential relay plugin.
+			// If the relay plugin is enabled and configured, use
+			// the specified relay server for broadcasts instead.
+
+			for (const conn of this.dataConnections.values()) {
+				if (!conn.channels.has(CHANNEL)) continue;
+				const packet = JSON.stringify({
+					opcode: "G_MSG",
+					payload: MESSAGE,
+					ttl: 1,
+				});
+				conn.channels.get(CHANNEL).chan.send(packet);
+			}
+		}
+
+		getRTT({ PEER }) {
+			// read the current PeerConnection's RTT
+			if (!this.peer) return "";
+			const ID = Scratch.Cast.toString(PEER);
+			if (!this.dataConnections.has(ID)) return "";
+			return this.dataConnections.get(ID).rtt;
+		}
+
+		getBitrate({ TYPE, PEER }) {
+			// read the current PeerConnection's estimated bandwidth
+			if (!this.peer) return "";
+			const ID = Scratch.Cast.toString(PEER);
+			const MODE = Scratch.Cast.toNumber(TYPE);
+			if (!this.dataConnections.has(ID)) return "";
+			switch (MODE) {
+				case 0: // outgoing
+					return this.dataConnections.get(ID).outgoingBitrate;
+				case 1: // incoming
+					return this.dataConnections.get(ID).incomingBitrate;
+			}
 		}
 
 		disconnectPeer() {
