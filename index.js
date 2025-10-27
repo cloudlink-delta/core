@@ -134,10 +134,10 @@
   const opcodes = {
     conditional: (opcode, text, options = {}) => ({
       opcode,
-      text: Scratch.translate(text),
+      text: text.map(v => Scratch.translate(v)),
       blockType: Scratch.BlockType.CONDITIONAL,
       branchCount: text.length - 1,
-      ...options,
+      ...options
     }),
 
     reporter: (opcode, text, args = {}, options = {}) => ({
@@ -1020,6 +1020,10 @@
           opcodes.boolean('isOtherPeerConnected', 'connected to [ID]?', {
             ID: args.string('B')
           }),
+          opcodes.separator(),
+
+          // Data channels
+          opcodes.label('Channels'),
           opcodes.boolean(
             'doesPeerHaveChannel',
             'does [ID] have channel [CHANNEL]?',
@@ -1028,10 +1032,6 @@
               CHANNEL: args.string('foobar')
             }
           ),
-          opcodes.separator(),
-
-          // Data channels
-          opcodes.label('Channels'),
           opcodes.command(
             'openNewPeerChannel',
             'open channel [CHANNEL] with peer [ID] reliable? [ORDERED]',
@@ -1160,7 +1160,9 @@
             ],
             {
               // TODO: missing implementation
-              LIST: args.string('my list')
+              arguments: {
+                LIST: args.string('my list')
+              }
             }
           )
         ],
