@@ -120,6 +120,11 @@
     return
   }
 
+  // Initialize the plugin loader
+  if (!Scratch.vm.runtime.ext_cldelta_pluginloader) {
+    Scratch.vm.runtime.ext_cldelta_pluginloader = new Array()
+  }
+
   /*
 		Block utilities for creating blocks with less code.
 		Based on Rotur.js by Mistium
@@ -1491,4 +1496,16 @@
   Scratch.extensions.register(core)
   Scratch.vm.runtime.ext_cldelta_core = core
   console.log('CLΔ Core extension loaded.')
+
+  // Load all registered plugins
+  if (Scratch.vm.runtime.ext_cldelta_pluginloader.length > 0) {
+    for (const plugin of Scratch.vm.runtime.ext_cldelta_pluginloader) {
+      plugin.register(core)
+    }
+    console.log(
+      'CLΔ Core loaded ' +
+        Scratch.vm.runtime.ext_cldelta_pluginloader.length +
+        ' plugin(s) during startup.'
+    )
+  }
 })(Scratch)
