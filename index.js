@@ -81,6 +81,79 @@
 	}
 
 	/*
+		Block utilities for creating blocks with less code.
+		Based on Rotur.js by Mistium
+		https://extensions.mistium.com/featured/Rotur.js
+
+		MPL-2.0
+		This Source Code is subject to the terms of the Mozilla Public License, v2.0,
+		If a copy of the MPL was not distributed with this file,
+		Then you can obtain one at https://mozilla.org/MPL/2.0/
+	*/
+	// TODO: refactor opcodes to use these block templates
+	const blocks = {
+		reporter: function (opcode, text, args = {}, options = {}) {
+			return {
+				opcode,
+				blockType: Scratch.BlockType.REPORTER,
+				text,
+				arguments: args,
+				...options
+			};
+		},
+
+		command: function (opcode, text, args = {}, options = {}) {
+			return {
+				opcode,
+				blockType: Scratch.BlockType.COMMAND,
+				text,
+				arguments: args,
+				...options
+			};
+		},
+
+		boolean: function (opcode, text, args = {}, options = {}) {
+			return {
+				opcode,
+				blockType: Scratch.BlockType.BOOLEAN,
+				text,
+				arguments: args,
+				...options
+			};
+		},
+
+		event: function (opcode, text, options = {}) {
+			return {
+				opcode,
+				blockType: Scratch.BlockType.EVENT,
+				text,
+				isEdgeActivated: false,
+				...options
+			};
+		},
+
+		button: function (text, func, options = {}) {
+			return {
+				blockType: Scratch.BlockType.BUTTON,
+				text,
+				func,
+				...options
+			};
+		},
+
+		label: function (text) {
+			return {
+				blockType: Scratch.BlockType.LABEL,
+				text
+			};
+		},
+
+		separator: function () {
+			return "---";
+		}
+	};
+
+	/*
 		  https://github.com/peers/peerjs
 		  
 		  (source: https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js)
@@ -1019,7 +1092,7 @@
 
 				case "G_MSG":
 					break;
-				
+
 				case "P_MSG":
 					conn.channels.get(chan.label).data = payload;
 					Scratch.vm.runtime.startHats("cldeltacore_whenPeerGetsPacket");
