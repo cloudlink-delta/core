@@ -932,9 +932,15 @@
       })
 
       this.peer.on('error', err => {
-        console.log('Peer error: ' + err)
-        this.peer.errorInfo = err
+        const msg = String(err)
+        this.peer.errorInfo = msg
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
+
+        // Handle "Error: Could not connect to peer {...}"
+        if (msg.startsWith('Error: Could not connect to peer')) {
+          id = msg.split('Error: Could not connect to peer ', 2)[1]
+          this.disconnectFromPeer({ ID: id })
+        }
       })
     }
 
@@ -1011,6 +1017,27 @@
 
           // Peers
           opcodes.label('Peers'),
+          opcodes.event('whenPeerConnects', 'when a peer connects'),
+          opcodes.reporter('readNewestPeerConnected', 'newest peer connected'),
+          opcodes.event('whenPeerDisconnects', 'when a peer disconnects'),
+          opcodes.reporter(
+            'readLastPeerDisconnected',
+            'last peer disconnected'
+          ),
+          opcodes.event('whenSpecificPeerConnects', 'when peer [ID] connects', {
+            arguments: {
+              ID: args.string('B')
+            }
+          }),
+          opcodes.event(
+            'whenSpecificPeerDisconnects',
+            'when peer [ID] disconnects',
+            {
+              arguments: {
+                ID: args.string('B')
+              }
+            }
+          ),
           opcodes.command('connectToPeer', 'connect to [ID]', {
             ID: args.string('B')
           }),
@@ -1056,31 +1083,6 @@
               // TODO: missing implementation
               ID: args.string('B'),
               LIST: args.string('my list')
-            }
-          ),
-          opcodes.separator(),
-
-          // Peer events
-          opcodes.label('Peer events'),
-          opcodes.event('whenPeerConnects', 'when a peer connects'),
-          opcodes.reporter('readNewestPeerConnected', 'newest peer connected'),
-          opcodes.event('whenSpecificPeerConnects', 'when peer [ID] connects', {
-            arguments: {
-              ID: args.string('B')
-            }
-          }),
-          opcodes.event('whenPeerDisconnects', 'when a peer disconnects'),
-          opcodes.reporter(
-            'readLastPeerDisconnected',
-            'last peer disconnected'
-          ),
-          opcodes.event(
-            'whenSpecificPeerDisconnects',
-            'when peer [ID] disconnects',
-            {
-              arguments: {
-                ID: args.string('B')
-              }
             }
           ),
           opcodes.separator(),
@@ -1256,9 +1258,15 @@
       this.dataConnections.get(ID).close()
     }
 
-    _isOtherPeerConnected (id) {
+    _isOtherPeerStored (id) {
       if (!this.peer) return false
       return this.dataConnections.has(id)
+    }
+
+    _isOtherPeerConnected (id) {
+      return this._isOtherPeerStored(id)
+        ? this.dataConnections.get(id).open
+        : false
     }
 
     isOtherPeerConnected ({ ID }) {
@@ -1268,7 +1276,7 @@
     closePeerChannel ({ ID, CHANNEL }) {
       ID = Scratch.Cast.toString(ID)
       CHANNEL = Scratch.Cast.toString(CHANNEL)
-      if (!this._isOtherPeerConnected(ID)) return
+      if (!this._isOtherPeerStored(ID)) return
       this.dataConnections.get(ID).channels.get(CHANNEL).chan.close()
     }
 
@@ -1276,7 +1284,7 @@
       ID = Scratch.Cast.toString(ID)
       CHANNEL = Scratch.Cast.toString(CHANNEL)
       if (!this.isPeerConnected()) return
-      if (!this._isOtherPeerConnected(ID)) return
+      if (!this._isOtherPeerStored(ID)) return
       if (this.dataConnections.get(ID).channels.has(CHANNEL)) return
 
       const lock_id = 'cldeltacore_' + ID + '_' + CHANNEL
@@ -1325,7 +1333,7 @@
       // to either directly send the message to the peer, or
       // specify a route path.
 
-      if (!this._isOtherPeerConnected(ID)) return
+      if (!this._isOtherPeerStored(ID)) return
       const conn = this.dataConnections.get(ID)
       if (!conn.channels.has(CHANNEL)) return
       return new Promise(resolve => {
@@ -1361,7 +1369,7 @@
     getPeerStats ({ TYPE, ID }) {
       // read the current PeerConnection's stats
       const peer = Scratch.Cast.toString(ID)
-      if (!this._isOtherPeerConnected(peer)) return
+      if (!this._isOtherPeerStored(peer)) return
       const conn = this.dataConnections.get(peer)
       const elem = Scratch.Cast.toNumber(TYPE)
       console.log(conn, elem)
@@ -1412,17 +1420,17 @@
     }
 
     whenSpecificPeerConnects ({ ID }) {
-      return this._isOtherPeerConnected(Scratch.Cast.toString(ID))
+      return this._isOtherPeerStored(Scratch.Cast.toString(ID))
     }
 
     whenSpecificPeerDisconnects ({ ID }) {
-      return !this._isOtherPeerConnected(Scratch.Cast.toString(ID))
+      return !this._isOtherPeerStored(Scratch.Cast.toString(ID))
     }
 
     doesPeerHaveChannel ({ ID, CHANNEL }) {
       ID = Scratch.Cast.toString(ID)
       CHANNEL = Scratch.Cast.toString(CHANNEL)
-      if (!this._isOtherPeerConnected(ID)) return false
+      if (!this._isOtherPeerStored(ID)) return false
       const conn = this.dataConnections.get(ID)
       if (!conn) return false
       return conn.channels.has(CHANNEL)
@@ -1431,7 +1439,7 @@
     readPacketFromPeer ({ ID, CHANNEL }) {
       ID = Scratch.Cast.toString(ID)
       CHANNEL = Scratch.Cast.toString(CHANNEL)
-      if (!this._isOtherPeerConnected(ID)) return ''
+      if (!this._isOtherPeerStored(ID)) return ''
       const conn = this.dataConnections.get(ID)
       if (!conn) return ''
       if (!conn.channels.has(CHANNEL)) return ''
