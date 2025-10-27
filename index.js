@@ -473,6 +473,30 @@
     }
 
     /**
+     * Checks if a peer with the given ID is stored in the data connections map.
+     * @param {string} id - The ID of the peer to check for.
+     * @returns {boolean} True if the peer is stored, false otherwise.
+     */
+    _isOtherPeerStored (id) {
+      if (!this.peer) return false
+      return this.dataConnections.has(id)
+    }
+
+    /**
+     * Checks if a peer with the given ID is connected.
+     * This function first checks if the peer is stored in the data connections map,
+     * and if so, returns the value of the "open" property of the connection object.
+     * If the peer is not stored, it returns false.
+     * @param {string} id - The ID of the peer to check for.
+     * @returns {boolean} True if the peer is connected, false otherwise.
+     */
+    _isOtherPeerConnected (id) {
+      return this._isOtherPeerStored(id)
+        ? this.dataConnections.get(id).open
+        : false
+    }
+
+    /**
      * Handles a data connection event by adding event listeners for the "open", "close", "error", and "data" events.
      * The "open" event is handled by ensuring that the connection has a default channel and sending the negate packet.
      * The "close" event is handled by removing the default channel from the connection's channel map.
@@ -1257,17 +1281,6 @@
       if (!this.dataConnections.has(ID)) return
       this.dataConnections.get(ID).close()
       this.dataConnections.delete(ID)
-    }
-
-    _isOtherPeerStored (id) {
-      if (!this.peer) return false
-      return this.dataConnections.has(id)
-    }
-
-    _isOtherPeerConnected (id) {
-      return this._isOtherPeerStored(id)
-        ? this.dataConnections.get(id).open
-        : false
     }
 
     isOtherPeerConnected ({ ID }) {
