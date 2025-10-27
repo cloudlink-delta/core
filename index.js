@@ -1256,6 +1256,7 @@
       if (!this.peer) return
       if (!this.dataConnections.has(ID)) return
       this.dataConnections.get(ID).close()
+      this.dataConnections.delete(ID)
     }
 
     _isOtherPeerStored (id) {
