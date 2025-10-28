@@ -1012,7 +1012,7 @@
             'toggleVerboseLogs',
             '[TOGGLE] verbose browser console logs',
             {
-              TOGGLE: args.number('0', { menu: 'logMode' })
+              TOGGLE: args.string('disable', { menu: 'logMode' })
             }
           ),
           opcodes.command(
@@ -1158,7 +1158,7 @@
           // Utilites and routing
           opcodes.label('Utilities and routing'),
           opcodes.reporter('getPeerStats', '[TYPE] with peer [ID]', {
-            TYPE: args.number('0', { menu: 'statsMode' }),
+            TYPE: args.string('transmit speed (bits/s)', { menu: 'statsMode' }),
             ID: args.string('B')
           }),
 
@@ -1200,42 +1200,18 @@
         menus: {
           logMode: {
             items: [
-              {
-                text: Scratch.translate('disable'),
-                value: '0'
-              },
-              {
-                text: Scratch.translate('enable'),
-                value: '1'
-              }
+                Scratch.translate('disable'),
+                Scratch.translate('enable'),
             ]
           },
           statsMode: {
             items: [
-              {
-                text: Scratch.translate('transmit speed (bits/s)'),
-                value: '0'
-              },
-              {
-                text: Scratch.translate('receive speed (bits/s)'),
-                value: '1'
-              },
-              {
-                text: Scratch.translate('total sent (bytes)'),
-                value: '2'
-              },
-              {
-                text: Scratch.translate('total received (bytes)'),
-                value: '3'
-              },
-              {
-                text: Scratch.translate('ping round-trip time (ms)'),
-                value: '4'
-              },
-              {
-                text: Scratch.translate('ping offset (ms)'),
-                value: '5'
-              }
+              Scratch.translate('transmit speed (bits/s)'),
+              Scratch.translate('receive speed (bits/s)'),
+              Scratch.translate('total sent (bytes)'),
+              Scratch.translate('total received (bytes)'),
+              Scratch.translate('ping round-trip time (ms)'),
+              Scratch.translate('ping offset (ms)'),
             ]
           }
         }
@@ -1244,7 +1220,7 @@
 
     // Functions that are mapped to blocks
     toggleVerboseLogs ({ TOGGLE }) {
-      this.verboseLogs = Scratch.Cast.toNumber(TOGGLE) ? true : false
+      this.verboseLogs = Scratch.Cast.toString(TOGGLE) == 'enable'
     }
 
     setPingPongInterval ({ DELAY }) {
@@ -1390,23 +1366,19 @@
       const peer = Scratch.Cast.toString(ID)
       if (!this._isOtherPeerStored(peer)) return
       const conn = this.dataConnections.get(peer)
-      const elem = Scratch.Cast.toNumber(TYPE)
-      console.log(conn, elem)
-      switch (elem) {
-        case 0: // outgoing bitrate
+    switch (Scratch.Cast.toString(TYPE)) {
+        case 'transmit speed (bits/s)':
           return conn.outgoingBitrate
-        case 1: // incoming bitrate
+        case 'receive speed (bits/s)':
           return conn.incomingBitrate
-        case 2: // total outgoing bytes
+        case 'total sent (bytes)':
           return conn.totalSendBytes
-        case 3:
+        case 'total received (bytes)':
           return conn.totalRecvBytes
-        case 4: // RTT
+        case 'ping round-trip time (ms)':
           return conn.rtt
-        case 5: // clockOffset
+        case 'ping offset (ms)':
           return conn.clockOffset
-        default:
-          return 'error!'
       }
     }
 
