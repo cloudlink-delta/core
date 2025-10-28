@@ -104,14 +104,6 @@
     return
   }
 
-  // Require the browser to support WebRTC (used for connectivity)
-  if (!RTCPeerConnection) {
-    alert(
-      "The CloudLink Delta extension could not detect WebRTC support; this extension won't work."
-    )
-    return
-  }
-
   // Require browser to support Web Locks API (used for concurrency)
   if (!navigator.locks) {
     alert(
@@ -340,9 +332,113 @@
       this.remapper = new Map() // map[string] function
       this.taskQueue = new Map() // map[peer] function
       this.pingPongInterval = 5000 // Default is 5 seconds
+      this.diagnostics = {
+        guaranteedToWork: false,
+        browser: '',
+        dataCapable: false,
+        reliableCapable: false,
+        mediaCapable: false
+      }
     }
 
     // Internal functions that aren't mapped to blocks
+
+    /**
+     * Runs diagnostics to determine the capabilities of the browser.
+     * @returns {object} Object containing the results of the diagnostics.
+     * @property {boolean} guaranteedToWork Whether the extension is guaranteed to work in the current browser.
+     * @property {string} browser The type of browser being used.
+     * @property {boolean} dataCapable Whether the browser supports data channels.
+     * @property {boolean} reliableCapable Whether the browser supports reliable data channels.
+     * @property {boolean} mediaCapable Whether the browser supports media capture.
+     */
+    _runDiagnostics () {
+      this.diagnostics.guaranteedToWork = false
+
+      const browser = () => {
+        if (typeof navigator === 'undefined' || !navigator.userAgent)
+          return 'Not a browser'
+
+        const ua = navigator.userAgent.toLowerCase()
+
+        if (ua.includes('firefox')) return 'firefox'
+        if (ua.includes('edg/') || ua.includes('edge')) return 'edge'
+        if (
+          ua.includes('chrome') &&
+          !ua.includes('edg/') &&
+          !ua.includes('opr/')
+        )
+          return 'chrome'
+        if (ua.includes('safari') && !ua.includes('chrome')) return 'safari'
+
+        // If browser is unknown, check WebRTC compatibility
+        const hasWebRTC =
+          typeof RTCPeerConnection !== 'undefined' ||
+          typeof webkitRTCPeerConnection !== 'undefined' ||
+          typeof mozRTCPeerConnection !== 'undefined'
+
+        return hasWebRTC
+          ? 'Supported but unknown browser'
+          : 'Not a supported browser'
+      }
+
+      const dataCapable = () => {
+        try {
+          const pc = new RTCPeerConnection()
+          const dc = pc.createDataChannel('test')
+          pc.close()
+          return !!dc
+        } catch {
+          return false
+        }
+      }
+
+      const reliableCapable = () => {
+        if (typeof RTCPeerConnection === 'undefined') return false
+
+        try {
+          const pc = new RTCPeerConnection()
+          const dc = pc.createDataChannel('test', { reliable: true })
+
+          // If it was created successfully and supports the 'ordered' property,
+          // it's likely a modern, reliable implementation.
+          const supported = 'ordered' in dc
+
+          dc.close()
+          pc.close()
+
+          return supported
+        } catch {
+          return false
+        }
+      }
+
+      const mediaCapable = () => {
+        if (typeof navigator === 'undefined') return false
+
+        // Modern API (recommended)
+        if (navigator.mediaDevices?.getUserMedia) return true
+
+        // Legacy fallbacks
+        return !!(
+          navigator.getUserMedia ||
+          navigator.webkitGetUserMedia ||
+          navigator.mozGetUserMedia
+        )
+      }
+
+      // Run all diagnostics
+      this.diagnostics.browser = browser()
+      this.diagnostics.dataCapable = dataCapable()
+      this.diagnostics.reliableCapable = reliableCapable()
+      this.diagnostics.mediaCapable = mediaCapable()
+
+      if (this.diagnostics.browser !== 'Not a supported browser'
+        && this.diagnostics.dataCapable
+        && this.diagnostics.reliableCapable
+        && this.diagnostics.mediaCapable)
+        this.diagnostics.guaranteedToWork = true
+    }
 
     /**
      * Maps a key to a function that will be called when the corresponding block
@@ -1006,6 +1102,27 @@
           opcodes.label('Dialect revision ' + DIALECT_REVISION),
           opcodes.separator(),
 
+          // Diagnostics
+          opcodes.label('Diagnostics'),
+          opcodes.reporter('currentBrowser', 'my current web browser'),
+          opcodes.boolean(
+            'isGuaranteedToWork',
+            'is my browser guaranteed to work with this extension?'
+          ),
+          opcodes.boolean(
+            'isDataCapable',
+            'does my browser support DataChannels?'
+          ),
+          opcodes.boolean(
+            'isReliableCapable',
+            'does my browser support reliable DataChannels?'
+          ),
+          opcodes.boolean(
+            'isMediaCapable',
+            'does my browser support MediaStreams?'
+          ),
+          opcodes.separator(),
+
           // Configuration
           opcodes.label('Configuration'),
           opcodes.command(
@@ -1199,10 +1316,7 @@
         ],
         menus: {
           logMode: {
-            items: [
-                Scratch.translate('disable'),
-                Scratch.translate('enable'),
-            ]
+            items: [Scratch.translate('disable'), Scratch.translate('enable')]
           },
           statsMode: {
             items: [
@@ -1211,7 +1325,7 @@
               Scratch.translate('total sent (bytes)'),
               Scratch.translate('total received (bytes)'),
               Scratch.translate('ping round-trip time (ms)'),
-              Scratch.translate('ping offset (ms)'),
+              Scratch.translate('ping offset (ms)')
             ]
           }
         }
@@ -1219,6 +1333,60 @@
     }
 
     // Functions that are mapped to blocks
+
+    /**
+     * Returns the name of the browser currently running the extension.
+     * It has the following outputs:
+     * - firefox
+     * - chrome
+     * - safari
+     * - edge
+     * - Supported but unknown browser
+     * - Not a supported browser
+     * - Not a browser
+     * (the last one is a failback for an unknown, but WebRTC compatible environment)
+     * @returns {string} - The name of the browser.
+     */
+    currentBrowser () {
+      return this.diagnostics.browser
+    }
+    
+    /**
+     * Returns whether the browser is guaranteed to support CloudLink Delta.
+     * This is determined by running a set of diagnostics when the extension is loaded.
+     * @returns {boolean} - Whether the browser is guaranteed to support CloudLink Delta.
+     */
+    isGuaranteedToWork() {
+      return this.diagnostics.guaranteedToWork
+    }
+
+    /**
+     * Checks if the browser supports data channels, which are used for
+     * the CloudLink Delta protocol.
+     * @returns {boolean} - Whether the browser supports DataChannels.
+     */
+    isDataCapable () {
+      return this.diagnostics.dataCapable
+    }
+
+    /**
+     * Checks if the browser supports reliable data channels.
+     * If the browser doesn't support it, the PeerJS library will use
+     * a shim for compatibility.
+     * @returns {boolean} - Whether the browser supports reliable DataChannels.
+     */
+    isReliableCapable () {
+      return this.diagnostics.reliableCapable
+    }
+
+    /**
+     * Checks if the browser is capable of streaming media.
+     * @returns {boolean} - Whether the browser supports MediaStreams.
+     */
+    isMediaCapable () {
+      return this.diagnostics.mediaCapable
+    }
+
     toggleVerboseLogs ({ TOGGLE }) {
       this.verboseLogs = Scratch.Cast.toString(TOGGLE) == 'enable'
     }
@@ -1366,7 +1534,7 @@
       const peer = Scratch.Cast.toString(ID)
       if (!this._isOtherPeerStored(peer)) return
       const conn = this.dataConnections.get(peer)
-    switch (Scratch.Cast.toString(TYPE)) {
+      switch (Scratch.Cast.toString(TYPE)) {
         case 'transmit speed (bits/s)':
           return conn.outgoingBitrate
         case 'receive speed (bits/s)':
@@ -1464,7 +1632,6 @@
 
   // Register the extension
   const core = new CloudLinkDelta_Core()
-  console.log(core.getInfo())
   Scratch.extensions.register(core)
   Scratch.vm.runtime.ext_cldelta_core = core
   console.log('CLΔ Core extension loaded.')
@@ -1482,4 +1649,7 @@
     // Clean up
     Scratch.vm.runtime.ext_cldelta_pluginloader = []
   }
+
+  // Run diagnostics
+  core._runDiagnostics()
 })(Scratch)
