@@ -1502,12 +1502,12 @@
     for (const plugin of Scratch.vm.runtime.ext_cldelta_pluginloader) {
       plugin.register(core)
     }
-    // Clean up
-    Scratch.vm.runtime.ext_cldelta_pluginloader = []
     console.log(
       'CLΔ Core loaded ' +
         Scratch.vm.runtime.ext_cldelta_pluginloader.length +
         ' plugin(s) during startup.'
     )
+    // Clean up
+    Scratch.vm.runtime.ext_cldelta_pluginloader = []
   }
 })(Scratch)
