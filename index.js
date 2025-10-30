@@ -331,7 +331,7 @@
       this.plugins = new Array() // []string
       this.remapper = new Map() // map[string] function
       this.taskQueue = new Map() // map[peer] function
-      this.pingPongInterval = 5000 // Default is 5 seconds
+      this.pingPongInterval = 100 // Default is 100 milliseconds
       this.diagnostics = {
         guaranteedToWork: false,
         browser: '',
@@ -339,9 +339,74 @@
         reliableCapable: false,
         mediaCapable: false
       }
+
+      /**
+       * A Map to register plugin handlers for specific opcodes.
+       * Maps: opcode (string) -> handler (function)
+       */
+      this.opcodeHandlers = new Map()
+
+      /**
+       * A map of plugin-specific message handlers.
+       * Plugins (like Sync, Discovery) will register themselves here.
+       * @type {Object<string, function>}
+       */
+      this.onMessage = {}
+
+      /**
+       * Key is the channel label.
+       * Value is an object containing the most recent value and the origin ID.
+       * @type {Map<string, Object>}
+       */
+      this.gmsg_state = new Map()
     }
 
     // Internal functions that aren't mapped to blocks
+
+    /**
+     * Internal "smart" send function.
+     * All outgoing packets should be routed through here.
+     * @param {object} packet - A packet object following the protocol schema.
+     * @private
+     */
+    _send (packet) {
+      if (!this.peer) return
+
+      // Apply defaults and origin
+      const fullPacket = {
+        origin: this.peer.id,
+        ttl: 1,
+        target: '*', // Default to broadcast
+        channel: 'default',
+        ...packet // The packet from the block will overwrite defaults
+      }
+
+      const message = JSON.stringify(fullPacket)
+      const { target, channel } = fullPacket
+
+      if (target === '*') {
+        // --- Broadcast to all peers ---
+        for (const conn of this.dataConnections.values()) {
+          if (conn.channels.has(channel)) {
+            this._getChan(conn, channel).chan.send(message)
+          }
+        }
+      } else {
+        // --- Unicast to a specific peer ---
+        const conn = this.dataConnections.get(target)
+        if (conn && conn.channels.has(channel)) {
+          this._getChan(conn, channel).chan.send(message)
+        } else if (conn) {
+          console.warn(
+            `[CLΔ Core] Cannot send packet: Channel "${channel}" not open with peer "${target}".`
+          )
+        } else {
+          console.warn(
+            `[CLΔ Core] Cannot send packet: Not connected to peer "${target}".`
+          )
+        }
+      }
+    }
 
     /**
      * Runs diagnostics to determine the capabilities of the browser.
@@ -433,10 +498,12 @@
       this.diagnostics.reliableCapable = reliableCapable()
       this.diagnostics.mediaCapable = mediaCapable()
 
-      if (this.diagnostics.browser !== 'Not a supported browser'
-        && this.diagnostics.dataCapable
-        && this.diagnostics.reliableCapable
-        && this.diagnostics.mediaCapable)
+      if (
+        this.diagnostics.browser !== 'Not a supported browser' &&
+        this.diagnostics.dataCapable &&
+        this.diagnostics.reliableCapable &&
+        this.diagnostics.mediaCapable
+      )
         this.diagnostics.guaranteedToWork = true
     }
 
@@ -626,13 +693,13 @@
         )
 
         if (conn.label === 'default') {
-          console.log('Peer ' + conn.peer + ' connected.')
+          console.log('[CLΔ Core] Peer ' + conn.peer + ' connected.')
           this.newestConnected = conn.peer
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerConnects')
           Scratch.vm.runtime.startHats('cldeltacore_whenSpecificPeerConnects')
         } else {
           console.warn(
-            'Peer ' +
+            '[CLΔ Core] Peer ' +
               conn.peer +
               ' connected, but is using a non-default channel.'
           )
@@ -751,47 +818,53 @@
      * @param {Object} data - The data object containing the opcode and payload.
      */
     async _handleChannelData (conn, chan, data) {
-      const { opcode, payload } = data
-      var { ttl } = data
+      // We parse the whole packet
+      const { opcode, payload, origin, ttl, listener } = data
 
-      // Drop packets with expired TTL
-      ttl--
-      if (ttl < 0) {
-        console.warn('Dropping packet "' + opcode + '": TTL expired')
+      // 1. TTL Check
+      if (ttl === undefined || ttl < 0) {
         return
       }
 
-      console.log(conn.peer, chan.label, data)
-      switch (opcode) {
-        // TODO: implement other opcodes based on the CL5.1 provisional spec
+      // 2. Plugin Opcode Dispatcher
+      // Check if a plugin (like Sync or Discovery) has registered this opcode
+      if (this.opcodeHandlers.has(opcode)) {
+        try {
+          // Found a plugin handler, forward the entire packet
+          this.opcodeHandlers.get(opcode)(data, conn.peer)
+        } catch (e) {
+          console.error(`[CLΔ Core] Error in plugin handler for opcode "${opcode}":`, e)
+        }
+        return // Plugin handled it
+      }
 
-        // TODO
-        case 'LIST_ACK':
-        case 'FIND_ACK':
-        case 'CREATE_ACK':
-        case 'JOIN_ACK':
-        case 'KEEPALIVE_ACK':
-        case 'TRANSITION':
-        case 'NEW_HOST':
-        case 'NEW_PEER':
-        case 'PEER_LEFT':
-        case 'LOBBY_CLOSE':
-        case 'WARNING':
-        case 'VIOLATION':
+      // 3. Core Opcode Handler
+      // These are opcodes the Core handles itself
+      switch (opcode) {
+        // --- User-facing message opcodes (from your blocks) ---
+        case 'G_MSG':
+          this.gmsg_state.set(chan.label, {
+            value: payload,
+            origin: origin || conn.peer // Use 'origin' if present, else fall back
+          })
+          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
+          break
+        case 'P_MSG':
+          conn.channels.get(chan.label).data = payload
+          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
           break
 
+        // --- Core internal opcodes ---
         case 'PING':
           if (chan.label !== 'default') {
             console.warn(
-              'Attempted to call PING on non-default channel ' +
+              '[CLΔ Core] Attempted to call PING on non-default channel ' +
                 chan.label +
                 ' with peer ' +
                 conn.peer
             )
             return
           }
-
-          // Reply with a PONG message, containing the timestamp we received and the current timestamp.
           chan.send(
             JSON.stringify({
               opcode: 'PONG',
@@ -799,38 +872,32 @@
                 t1: payload.t1,
                 t2: Date.now()
               },
+              listener,
               ttl: 1
             })
           )
           break
-
         case 'PONG':
           if (chan.label !== 'default') {
             console.warn(
-              'Attempted to call PONG on non-default channel ' +
+              '[CLΔ Core] Attempted to call PONG on non-default channel ' +
                 chan.label +
                 ' with peer ' +
                 conn.peer
             )
             return
           }
-
-          // Compare the timestamps to calculate RTT
           var t3 = Date.now()
           var { t1, t2 } = payload
           var rtt = t3 - t1
           var offset = (t2 - t1 + (t2 - t3)) / 2
           conn.rtt = rtt
-          conn.clockOffset = offset // +offset → peer’s clock is ahead
-          console.log(
-            `Peer ${conn.peer} RTT: ${conn.rtt} ms, clock offset: ${conn.clockOffset} ms`
-          )
+          conn.clockOffset = offset
           break
-
         case 'NEGOTIATE':
           if (chan.label !== 'default') {
             console.warn(
-              'Attempted to call NEGOTIATE on non-default channel ' +
+              '[CLΔ Core] Attempted to call NEGOTIATE on non-default channel ' +
                 chan.label +
                 ' with peer ' +
                 conn.peer
@@ -839,7 +906,7 @@
           }
 
           console.log(
-            'Peer ' +
+            '[CLΔ Core] Peer ' +
               conn.peer +
               ' is using dialect revision ' +
               payload.spec_version +
@@ -855,7 +922,7 @@
           )
           if (payload.plugins.length > 0)
             console.log(
-              'Peer ' +
+              '[CLΔ Core] Peer ' +
                 conn.peer +
                 ' advertises the following plugins: ' +
                 Array.from(payload.plugins).join(', ')
@@ -885,6 +952,11 @@
           break
 
         case 'G_MSG':
+          this.gmsg_state.set(chan.label, {
+            value: payload,
+            origin: conn.peer.id
+          })
+          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
           break
 
         case 'P_MSG':
@@ -1069,6 +1141,33 @@
       })
     }
 
+    registerPlugin (plugin) {
+      if (!plugin || typeof plugin.getOpcodes !== 'function') {
+        console.warn(
+          '[CLΔ Core] Plugin failed to register: must have a getOpcodes method.',
+          plugin
+        )
+        return
+      }
+
+      // Get the opcodes and handlers from the plugin
+      const handlers = plugin.getOpcodes(this) // 'this' is the core
+
+      for (const [opcode, handler] of handlers.entries()) {
+        if (this.opcodeHandlers.has(opcode)) {
+          console.warn(
+            `[CLΔ Core] Opcode "${opcode}" is already registered! Overwriting.`
+          )
+        }
+        // Bind the handler to the plugin's 'this' context
+        this.opcodeHandlers.set(opcode, handler.bind(plugin))
+      }
+
+      console.log(
+        `[CLΔ Core] Registered ${handlers.size} opcodes for plugin: ${plugin.id}`
+      )
+    }
+
     /**
      * Returns an object containing information about the CLΔ Core extension.
      *
@@ -1236,6 +1335,29 @@
           // Packets
           opcodes.label('Packets'),
           opcodes.event(
+            'whenPeerGetsGlobalPacket',
+            'when I get a broadcast packet in channel [CHANNEL]',
+            {
+              arguments: {
+                CHANNEL: args.string('default')
+              }
+            }
+          ),
+          opcodes.reporter(
+            'readGlobalPacketData',
+            'global packet in channel [CHANNEL]',
+            {
+              CHANNEL: args.string('default')
+            }
+          ),
+          opcodes.reporter(
+            'readGlobalPacketOrigin',
+            'origin of global packet in channel [CHANNEL]',
+            {
+              CHANNEL: args.string('default')
+            }
+          ),
+          opcodes.event(
             'whenPeerGetsPacket',
             'when I get a packet from peer [ID] in channel [CHANNEL]',
             {
@@ -1350,13 +1472,13 @@
     currentBrowser () {
       return this.diagnostics.browser
     }
-    
+
     /**
      * Returns whether the browser is guaranteed to support CloudLink Delta.
      * This is determined by running a set of diagnostics when the extension is loaded.
      * @returns {boolean} - Whether the browser is guaranteed to support CloudLink Delta.
      */
-    isGuaranteedToWork() {
+    isGuaranteedToWork () {
       return this.diagnostics.guaranteedToWork
     }
 
@@ -1393,7 +1515,7 @@
 
     setPingPongInterval ({ DELAY }) {
       this.pingPongInterval =
-        Scratch.Cast.toNumber(DELAY) <= 0 ? 1000 : Scratch.Cast.toNumber(DELAY)
+        Scratch.Cast.toNumber(DELAY) <= 0 ? 100 : Scratch.Cast.toNumber(DELAY)
     }
 
     createPeer ({ ID }) {
@@ -1486,47 +1608,24 @@
       })
     }
 
-    async sendMessageToPeer ({ MESSAGE, ID, CHANNEL }) {
-      ID = Scratch.Cast.toString(ID)
-      if (!this.peer) return
-
-      // TODO: implement routing.
-      // Need to periodically compute a weighted routing table
-      // based on RTTs between connected peers. Then use that
-      // to either directly send the message to the peer, or
-      // specify a route path.
-
-      if (!this._isOtherPeerStored(ID)) return
-      const conn = this.dataConnections.get(ID)
-      if (!conn.channels.has(CHANNEL)) return
-      return new Promise(resolve => {
-        const packet = JSON.stringify({
-          opcode: 'P_MSG',
-          payload: MESSAGE,
-          ttl: 1
-        })
-        this._getChan(conn, CHANNEL).chan.send(packet)
-        resolve()
-      })
+    sendMessageToPeer ({ MESSAGE, ID, CHANNEL }) {
+      const packet = {
+        opcode: 'P_MSG', // This is a "Peer Message"
+        payload: MESSAGE,
+        target: Scratch.Cast.toString(ID),
+        channel: Scratch.Cast.toString(CHANNEL)
+      }
+      this._send(packet)
     }
 
-    async sendMessageToAllPeers ({ MESSAGE, CHANNEL }) {
-      CHANNEL = Scratch.Cast.toString(CHANNEL)
-      if (!this.peer) return
-
-      // TODO: implement hook for potential relay plugin.
-      // If the relay plugin is enabled and configured, use
-      // the specified relay server for broadcasts instead.
-
-      for (const conn of this.dataConnections.values()) {
-        if (!conn.channels.has(CHANNEL)) continue
-        const packet = JSON.stringify({
-          opcode: 'G_MSG',
-          payload: MESSAGE,
-          ttl: 1
-        })
-        this._getChan(conn, CHANNEL).chan.send(packet)
+    sendMessageToAllPeers ({ MESSAGE, CHANNEL }) {
+      const packet = {
+        opcode: 'G_MSG', // This is a "Global Message"
+        payload: MESSAGE,
+        target: '*', // '*' is the broadcast target
+        channel: Scratch.Cast.toString(CHANNEL)
       }
+      this._send(packet)
     }
 
     getPeerStats ({ TYPE, ID }) {
@@ -1603,6 +1702,18 @@
       if (!conn) return ''
       if (!conn.channels.has(CHANNEL)) return ''
       return this._getChan(conn, CHANNEL).data
+    }
+
+    readGlobalPacketData ({ CHANNEL }) {
+      const chan = Scratch.Cast.toString(CHANNEL)
+      if (!this.gmsg_state.has(chan)) return ''
+      return this.gmsg_state.get(chan).value
+    }
+
+    readGlobalPacketOrigin ({ CHANNEL }) {
+      const chan = Scratch.Cast.toString(CHANNEL)
+      if (!this.gmsg_state.has(chan)) return ''
+      return this.gmsg_state.get(chan).origin
     }
 
     readNewestPeerConnected () {
