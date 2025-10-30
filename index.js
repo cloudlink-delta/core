@@ -614,6 +614,7 @@
       if (!conn.lastSendBytes) conn.lastSendBytes = 0
       if (!conn.totalRecvBytes) conn.totalRecvBytes = 0
       if (!conn.totalSendBytes) conn.totalSendBytes = 0
+      if (!conn.openTime) conn.openTime = Date.now()
     }
 
     /**
@@ -1498,6 +1499,7 @@
               Scratch.translate('receive speed (bytes/s)'),
               Scratch.translate('total sent (bytes)'),
               Scratch.translate('total received (bytes)'),
+              Scratch.translate('connection duration (s)'),
               Scratch.translate('ping round-trip time (ms)'),
               Scratch.translate('ping offset (ms)')
             ]
@@ -1687,9 +1689,9 @@
       const conn = this.dataConnections.get(peer)
       switch (Scratch.Cast.toString(TYPE)) {
         case 'transmit speed (bytes/s)':
-          return Math.round(conn.outgoingBitrate / 8) 
+          return Math.round(conn.outgoingBitrate) 
         case 'receive speed (bytes/s)':
-          return Math.round(conn.incomingBitrate / 8)
+          return Math.round(conn.incomingBitrate)
         case 'total sent (bytes)':
           return conn.totalSendBytes
         case 'total received (bytes)':
@@ -1698,6 +1700,12 @@
           return conn.rtt
         case 'ping offset (ms)':
           return conn.clockOffset
+        case 'connection duration (s)':
+          if (!conn.openTime) {
+            return 0 // Connection isn't fully open yet
+          }
+          const durationInMs = Date.now() - conn.openTime
+          return Math.round(durationInMs / 1000)
       }
     }
 
