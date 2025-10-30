@@ -767,8 +767,8 @@
             // Update properties
             conn.lastRecvBytes = currentRecvBytes
             conn.lastSendBytes = currentSendBytes
-            conn.totalRecvBytes += currentRecvBytes
-            conn.totalSendBytes += currentSendBytes
+            conn.totalRecvBytes = currentRecvBytes
+            conn.totalSendBytes = currentSendBytes
             conn._lastTime = now
           } catch (error) {
             console.error('[CLΔ Core] Error getting stats:', error)
@@ -1687,9 +1687,9 @@
       const conn = this.dataConnections.get(peer)
       switch (Scratch.Cast.toString(TYPE)) {
         case 'transmit speed (bytes/s)':
-          return Math.round(conn.outgoingBitrate)
+          return Math.round(conn.outgoingBitrate / 8) 
         case 'receive speed (bytes/s)':
-          return Math.round(conn.incomingBitrate)
+          return Math.round(conn.incomingBitrate / 8)
         case 'total sent (bytes)':
           return conn.totalSendBytes
         case 'total received (bytes)':
