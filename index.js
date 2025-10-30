@@ -1397,7 +1397,7 @@
           // Utilites and routing
           opcodes.label('Utilities and routing'),
           opcodes.reporter('getPeerStats', '[TYPE] with peer [ID]', {
-            TYPE: args.string('transmit speed (bits/s)', { menu: 'statsMode' }),
+            TYPE: args.string('transmit speed (bytes/s)', { menu: 'statsMode' }),
             ID: args.string('B')
           }),
 
@@ -1634,10 +1634,10 @@
       if (!this._isOtherPeerStored(peer)) return
       const conn = this.dataConnections.get(peer)
       switch (Scratch.Cast.toString(TYPE)) {
-        case 'transmit speed (bits/s)':
-          return conn.outgoingBitrate
-        case 'receive speed (bits/s)':
-          return conn.incomingBitrate
+        case 'transmit speed (bytes/s)':
+          return Math.round(conn.outgoingBitrate)
+        case 'receive speed (bytes/s)':
+          return Math.round(conn.incomingBitrate)
         case 'total sent (bytes)':
           return conn.totalSendBytes
         case 'total received (bytes)':
