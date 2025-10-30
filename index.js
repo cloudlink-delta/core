@@ -540,6 +540,16 @@
     }
 
     /**
+     * Deletes a key from the remapper if it exists.
+     * If the key is not mapped, it does nothing.
+     * @param {string} key - The key to be deleted from the remapper.
+     * @returns {void}
+     */
+    _unmap (key) {
+      this.remapper.delete(key)
+    }
+
+    /**
      * Handles a channel open event by adding the channel to the connection's
      * channel map and setting its data to an empty string.
      * @param {Object} conn - The connection object.
@@ -705,6 +715,8 @@
           )
         }
 
+        this.callbacks.call('peer_connect', conn)
+
         const ping = () => {
           defaultchan.send(
             JSON.stringify({
@@ -770,10 +782,10 @@
         // Schedule updates
         this.taskQueue.set(
           conn.peer,
-          setInterval(async () => {
-            await handleStats()
-            ping()
-          }, this.pingPongInterval)
+          {
+            pinger: setInterval(() => ping(), this.pingPongInterval),
+            poller: setInterval(async () => await handleStats(), 100)
+          }
         )
       })
 
@@ -789,7 +801,9 @@
           /* if (this.voiceConnections.has(conn.peer)) {
 						this.voiceConnections.get(conn.peer).call.close();
 					}*/
-          clearInterval(this.taskQueue.get(conn.peer))
+          const tasks = this.taskQueue.get(conn.peer)
+          clearInterval(tasks.pinger)
+          clearInterval(tasks.poller)
           this.taskQueue.delete(conn.peer)
           console.log('Peer ' + conn.peer + ' disconnected.')
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnects')
@@ -833,7 +847,10 @@
           // Found a plugin handler, forward the entire packet
           this.opcodeHandlers.get(opcode)(data, conn.peer)
         } catch (e) {
-          console.error(`[CLΔ Core] Error in plugin handler for opcode "${opcode}":`, e)
+          console.error(
+            `[CLΔ Core] Error in plugin handler for opcode "${opcode}":`,
+            e
+          )
         }
         return // Plugin handled it
       }
@@ -842,6 +859,13 @@
       // These are opcodes the Core handles itself
       switch (opcode) {
         // --- User-facing message opcodes (from your blocks) ---
+        case 'WARNING':
+          alert(payload)
+          break
+        case 'VIOLATION':
+          alert(payload)
+          this.destroyPeer()
+          break
         case 'G_MSG':
           this.gmsg_state.set(chan.label, {
             value: payload,
@@ -944,7 +968,7 @@
 
           if (advertised_features.size > 0)
             console.log(
-              'Peer ' +
+              '[CLΔ Core] Peer ' +
                 conn.peer +
                 ' advertises the following features: ' +
                 Array.from(advertised_features).join(', ')
@@ -1050,12 +1074,10 @@
     }
 
     /**
-     * Creates a new PeerJS connection with the specified ID.
-     * This method will not overwrite an existing connection.
-     * @param {string} id - The ID to use when creating the connection.
+     * Spawns a new peer with the given ID.
+     * @param {*} id 
      */
-    _createPeer (id) {
-      if (this.peer) return
+    _spawnPeer (id) {
       this.name = id
       this.peer = new Peer(id, {
         host: 'peerjs.mikedev101.cc',
@@ -1091,6 +1113,7 @@
       this.peer.on('open', id => {
         if (id === id) {
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerCreated')
+          this.callbacks.call('peer_open', id)
         }
       })
 
@@ -1139,6 +1162,19 @@
           this.disconnectFromPeer({ ID: id })
         }
       })
+    }
+
+    /**
+     * Creates a PeerJS Peer object. It can be remapped if needed.
+     */
+    _createPeer (id) {
+      if (this.peer) return
+
+      if (this._isRemapped('createPeer')) {
+        return this._callRemapped('createPeer', id)
+      }
+
+      return this._spawnPeer(id)
     }
 
     registerPlugin (plugin) {
@@ -1397,7 +1433,9 @@
           // Utilites and routing
           opcodes.label('Utilities and routing'),
           opcodes.reporter('getPeerStats', '[TYPE] with peer [ID]', {
-            TYPE: args.string('transmit speed (bytes/s)', { menu: 'statsMode' }),
+            TYPE: args.string('transmit speed (bytes/s)', {
+              menu: 'statsMode'
+            }),
             ID: args.string('B')
           }),
 
@@ -1442,8 +1480,8 @@
           },
           statsMode: {
             items: [
-              Scratch.translate('transmit speed (bits/s)'),
-              Scratch.translate('receive speed (bits/s)'),
+              Scratch.translate('transmit speed (bytes/s)'),
+              Scratch.translate('receive speed (bytes/s)'),
               Scratch.translate('total sent (bytes)'),
               Scratch.translate('total received (bytes)'),
               Scratch.translate('ping round-trip time (ms)'),
