@@ -1,4 +1,5 @@
-![CloudLink Delta](https://github.com/user-attachments/assets/aa2ac9e0-4187-44c4-84be-069242d2b6dc)
+![core](https://github.com/user-attachments/assets/e81fa15a-4790-49c0-ab03-ae0e328705d8)
+
 
 # CLΔ Core extension library.
 Contains the essentials you need to get for P2P network connectivity.
