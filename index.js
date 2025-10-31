@@ -203,6 +203,15 @@
     })
   }
 
+  function getTarget (target_id, name, type = '') {
+    const target = vm.runtime.getTargetById(target_id)
+    if (!target) return undefined
+    const variable = Object.values(target.variables).find(
+      v => v.name === name && v.type === type
+    )
+    return variable
+  }
+
   // Ah yes, Perry the platypus. It seems you've found my callback-inator.
   class CallbackInator {
     constructor () {
@@ -330,7 +339,7 @@
       this.plugins = new Array() // []string
       this.remapper = new Map() // map[string] function
       this.taskQueue = new Map() // map[peer] function
-      this.pingPongInterval = 500 // Default is half a second
+      this.pingPongInterval = 1000 // Default is every second
       this.diagnostics = {
         guaranteedToWork: false,
         browser: '',
@@ -1784,8 +1793,20 @@
       return this.lastDisconnected
     }
 
-    storePeerChannels ({ ID, LIST }) {
-      // TODO
+    storePeerChannels ({ ID, LIST }, util) {
+      const peer_id = Scratch.Cast.toString(ID)
+      const list_name = Scratch.Cast.toString(LIST)
+
+      const target_list = getTarget(util.target, list_name)
+      if (!target_list) return
+
+      const peer = this.dataConnections.get(peer_id)
+      if (!peer) return
+      
+      // Convert peer.channels to an array of names
+      const peer_channels = Array.from(peer.channels.keys())
+      target_list.set(peer_id, peer_channels)
+      target_list._monitorUpToDate = false
     }
 
     computeRoutingPath ({ A, B }) {
