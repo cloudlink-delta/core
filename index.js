@@ -335,6 +335,7 @@
       this.newestConnected = ''
       this.lastDisconnected = ''
       this.verboseLogs = false
+      this.maskedConnections = new Set() // Set of connection IDs that are masked so that only plugins can send to them
       this.callbacks = new CallbackInator()
       this.plugins = new Array() // []string
       this.remapper = new Map() // map[string] function
@@ -395,6 +396,10 @@
       if (target === '*') {
         // --- Broadcast to all peers ---
         for (const conn of this.dataConnections.values()) {
+
+          // Do not transmit a broadcast event if the connection is masked
+          if (this.maskedConnections.has(conn.id)) continue
+
           if (conn.channels.has(channel)) {
             this._getChan(conn, channel).chan.send(message)
           }
@@ -707,6 +712,7 @@
               version: EXTENSION_VERSION,
               spec_version: DIALECT_REVISION,
               is_relay: false,
+              is_bridge: false,
               is_discovery: false
             }
           })
@@ -1672,6 +1678,9 @@
     }
 
     sendMessageToPeer ({ MESSAGE, ID, CHANNEL }) {
+      // Do not transmit if the peer is masked
+      if (this.maskedConnections.has(Scratch.Cast.toString(ID))) return
+
       const packet = {
         opcode: 'P_MSG', // This is a "Peer Message"
         payload: MESSAGE,
