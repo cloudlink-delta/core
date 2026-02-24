@@ -348,6 +348,9 @@
         reliableCapable: false,
         mediaCapable: false
       }
+      // Allow plugins to use their own ID resolvers as key-value pairs
+      this.idRemapper = null
+      this.enableIdRemapper = false
 
       /**
        * A Map to register plugin handlers for specific opcodes.
@@ -1036,7 +1039,10 @@
 
           // Acquire WebLock to prevent other peers from opening channels while we're creating this one
           const lock_id = 'cldeltacore_' + conn.peer + '_' + chan.label
-          await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
+          await navigator.locks.request(lock_id, () => {
+            // Don't allow duplicate channel labels
+            if (conn.channels.has(label)) return
+
             const newchan = conn.peerConnection.createDataChannel(label, {
               ordered: ordered,
               negotiated: true,
@@ -1044,7 +1050,7 @@
             })
 
             // Synchronize channel ID counter
-            conn.idCounter = id
+            conn.idCounter = Math.max(conn.idCounter, id + 1)
 
             // Bind handlers to channel
             this._chanMethodBinder(conn, newchan)
@@ -1205,6 +1211,35 @@
       }
 
       return this._spawnPeer(id)
+    }
+
+    registerMapper(plugin) {
+      if (this.enableIdRemapper) {
+        return
+      }
+      if (!plugin || typeof plugin.mapper !== 'function') {
+        console.warn(
+          '[CLΔ Core] Mapper failed to register: plugin must have a mapper() method.'
+        )
+        return
+      }
+
+      // Set mapper flag
+      this.enableIdRemapper = true
+
+      // Set the mapper
+      this.idRemapper = plugin.mapper
+
+      console.log(
+        `[CLΔ Core] Using ID remapper from plugin: ${plugin.id}`
+      )
+    }
+
+    removeMapper() {
+      if (this.enableIdRemapper) {
+        this.enableIdRemapper = false
+        this.idRemapper = null
+      }
     }
 
     registerPlugin (plugin) {
@@ -1642,9 +1677,12 @@
       if (this.dataConnections.get(ID).channels.has(CHANNEL)) return
 
       const lock_id = 'cldeltacore_' + ID + '_' + CHANNEL
-      await navigator.locks.request(lock_id, { ifAvailable: true }, () => {
+      await navigator.locks.request(lock_id, () => {
         // Create a new channel with PeerJS
         const conn = this.dataConnections.get(ID)
+        if (!conn) return
+        if (conn.channels.has(CHANNEL)) return
+
         const id = conn.idCounter++
 
         // Since PeerJS doesn't natively support multiple channels, we have to create a new one manually
@@ -1680,22 +1718,35 @@
     sendMessageToPeer ({ MESSAGE, ID, CHANNEL }) {
       // Do not transmit if the peer is masked
       if (this.maskedConnections.has(Scratch.Cast.toString(ID))) return
+      this._sendMessageToPeer(MESSAGE, Scratch.Cast.toString(ID), Scratch.Cast.toString(CHANNEL))
+    }
+
+    _sendMessageToPeer(message, id, channel, opcode = 'P_MSG') {
+      let target = id;
+
+      if (this.enableIdRemapper) {
+        target = this.idRemapper().get(id);
+      }
 
       const packet = {
-        opcode: 'P_MSG', // This is a "Peer Message"
-        payload: MESSAGE,
-        target: Scratch.Cast.toString(ID),
-        channel: Scratch.Cast.toString(CHANNEL)
+        opcode,
+        payload: message,
+        target,
+        channel
       }
       this._send(packet)
     }
 
     sendMessageToAllPeers ({ MESSAGE, CHANNEL }) {
+      this._sendMessageToAllPeers(MESSAGE, Scratch.Cast.toString(CHANNEL))
+    }
+
+    _sendMessageToAllPeers(message, channel, opcode = 'G_MSG') {
       const packet = {
-        opcode: 'G_MSG', // This is a "Global Message"
-        payload: MESSAGE,
+        opcode,
+        payload: message,
         target: '*', // '*' is the broadcast target
-        channel: Scratch.Cast.toString(CHANNEL)
+        channel
       }
       this._send(packet)
     }
