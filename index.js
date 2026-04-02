@@ -341,6 +341,7 @@
       this.remapper = new Map() // map[string] function
       this.taskQueue = new Map() // map[peer] function
       this.pingPongInterval = 1000 // Default is every second
+      this.prettifier = null
       this.diagnostics = {
         guaranteedToWork: false,
         browser: '',
@@ -374,6 +375,43 @@
     }
 
     // Internal functions that aren't mapped to blocks
+
+    /**
+     * Converts a peer ID to a human-readable "pretty" format if a prettifier is registered.
+     * @param {string} id The peer ID to format.
+     * @returns {string} The formatted ID or the original ID.
+     * @private
+     */
+    _prettyPeer (id) {
+      if (this.prettifier) {
+        return this.prettifier(id)
+      }
+      return id
+    }
+
+    /**
+     * Registers a function from a plugin to format peer IDs for logging.
+     * @param {object} plugin The plugin instance registering the function.
+     * @param {function} func The function that takes an ID and returns a string.
+     */
+    registerPrettifier (plugin, func) {
+      if (this.prettifier) {
+        console.warn('[CLΔ Core] A prettifier is already registered. Overwriting.')
+      }
+      if (!plugin || typeof func !== 'function') {
+        console.error('[CLΔ Core] Prettifier registration failed: invalid plugin or function.')
+        return
+      }
+      this.prettifier = func
+      console.log(`[CLΔ Core] Registered peer ID prettifier from plugin: ${plugin.id}`)
+    }
+
+    removePrettifier () {
+      if (this.prettifier) {
+        this.prettifier = null
+        console.log('[CLΔ Core] Removed peer ID prettifier.')
+      }
+    }
 
     /**
      * Internal "smart" send function.
@@ -592,7 +630,7 @@
      */
     _handleChannelError (conn, chan, err) {
       console.warn(
-        'Channel ' + chan.label + ' error with peer ' + conn.peer + ':',
+        'Channel ' + chan.label + ' error with peer ' + this._prettyPeer(conn.peer) + ':',
         err
       )
       this.peer.errorInfo = err
@@ -722,14 +760,14 @@
         )
 
         if (conn.label === 'default') {
-          console.log('[CLΔ Core] Peer ' + conn.peer + ' connected.')
+          console.log('[CLΔ Core] Peer ' + this._prettyPeer(conn.peer) + ' connected.')
           this.newestConnected = conn.peer
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerConnects')
           Scratch.vm.runtime.startHats('cldeltacore_whenSpecificPeerConnects')
         } else {
           console.warn(
             '[CLΔ Core] Peer ' +
-              conn.peer +
+              this._prettyPeer(conn.peer) +
               ' connected, but is using a non-default channel.'
           )
         }
@@ -820,7 +858,7 @@
           clearInterval(tasks.pinger)
           clearInterval(tasks.poller)
           this.taskQueue.delete(conn.peer)
-          console.log(`[CLΔ Core] Peer ${conn.peer} disconnected.`)
+          console.log(`[CLΔ Core] Peer ${this._prettyPeer(conn.peer)} disconnected.`)
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnects')
           Scratch.vm.runtime.startHats(
             'cldeltacore_whenSpecificPeerDisconnects'
@@ -910,9 +948,8 @@
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call PING on non-default channel ' +
-                chan.label +
-                ' with peer ' +
-                conn.peer
+                chan.label + ' with peer ' +
+                this._prettyPeer(conn.peer)
             )
             return
           }
@@ -932,9 +969,8 @@
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call PONG on non-default channel ' +
-                chan.label +
-                ' with peer ' +
-                conn.peer
+                chan.label + ' with peer ' +
+                this._prettyPeer(conn.peer)
             )
             return
           }
@@ -949,16 +985,15 @@
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call NEGOTIATE on non-default channel ' +
-                chan.label +
-                ' with peer ' +
-                conn.peer
+                chan.label + ' with peer ' +
+                this._prettyPeer(conn.peer)
             )
             return
           }
 
           console.log(
             '[CLΔ Core] Peer ' +
-              conn.peer +
+              this._prettyPeer(conn.peer) +
               ' is using dialect revision ' +
               payload.spec_version +
               ' on ' +
@@ -974,7 +1009,7 @@
           if (payload.plugins.length > 0)
             console.log(
               '[CLΔ Core] Peer ' +
-                conn.peer +
+                this._prettyPeer(conn.peer) +
                 ' advertises the following plugins: ' +
                 Array.from(payload.plugins).join(', ')
             )
@@ -996,7 +1031,7 @@
           if (advertised_features.size > 0)
             console.log(
               '[CLΔ Core] Peer ' +
-                conn.peer +
+                this._prettyPeer(conn.peer) +
                 ' advertises the following features: ' +
                 Array.from(advertised_features).join(', ')
             )
@@ -1025,9 +1060,8 @@
           if (chan.label !== 'default') {
             console.warn(
               'Attempted to call NEW_CHAN on non-default channel ' +
-                chan.label +
-                ' with peer ' +
-                conn.peer
+                chan.label + ' with peer ' +
+                this._prettyPeer(conn.peer)
             )
             return
           }
@@ -1155,12 +1189,12 @@
 
       this.peer.on('connection', conn => {
         if (!conn.metadata) {
-          console.warn('Peer ' + conn.peer + ' did not set their metadata!!!')
+          console.warn('Peer ' + this._prettyPeer(conn.peer) + ' did not set their metadata!!!')
         }
         if (!conn.metadata.protocol || conn.metadata.protocol !== 'delta') {
           console.warn(
             'Peer ' +
-              conn.peer +
+              this._prettyPeer(conn.peer) +
               " did not passthrough the 'delta' protocol in their metadata!!!"
           )
         }
@@ -1268,14 +1302,39 @@
       // Get the opcodes and handlers from the plugin
       const handlers = plugin.getOpcodes(this) // 'this' is the core
 
-      for (const [opcode, handler] of handlers.entries()) {
+      for (const [opcode, value] of handlers.entries()) {
         if (this.opcodeHandlers.has(opcode)) {
           console.warn(
             `[CLΔ Core] Opcode "${opcode}" is already registered! Overwriting.`
           )
         }
+
+        let handler, requiredFeature
+
+        if (typeof value === 'function') {
+          // Legacy format: value is just the handler function
+          handler = value
+          requiredFeature = plugin.requiredFeature // Fallback to plugin-wide feature
+        } else if (
+          typeof value === 'object' &&
+          value !== null &&
+          typeof value.handler === 'function'
+        ) {
+          // New format: value is an object { handler, requiredFeature }
+          handler = value.handler
+          requiredFeature = value.requiredFeature // Can be undefined/null, which means no feature required
+        } else {
+          console.error(
+            `[CLΔ Core] Invalid handler for opcode "${opcode}" from plugin ${plugin.id}`
+          )
+          continue
+        }
+
         // Bind the handler to the plugin's 'this' context
-        this.opcodeHandlers.set(opcode, {handler: handler.bind(plugin), requiredFeature: plugin.requiredFeature})
+        this.opcodeHandlers.set(opcode, {
+          handler: handler.bind(plugin),
+          requiredFeature: requiredFeature
+        })
       }
 
       console.log(
