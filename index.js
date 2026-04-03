@@ -1206,12 +1206,9 @@
         this._handleDataConnection(conn)
       })
 
-      this.peer.on('call', async call => {
-        const chat = Scratch.vm.runtime.ext_cldelta_chat
-        if (!chat) {
-          chat._callHandler(call)
-        }
-      })
+    this.peer.on('call', async call =>
+      this.callbacks.call('peer_call', call)
+    )
 
       this.peer.on('close', () => {
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerDestroyed')
@@ -1225,12 +1222,6 @@
         const msg = String(err)
         this.peer.errorInfo = msg
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
-
-        // Handle "Error: Could not connect to peer {...}"
-        if (msg.startsWith('Error: Could not connect to peer')) {
-          id = msg.split('Error: Could not connect to peer ', 2)[1]
-          this.disconnectFromPeer({ ID: id })
-        }
       })
     }
 
@@ -1724,7 +1715,11 @@
     }
 
     disconnectFromPeer ({ ID }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peerId = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peerId = this.resolvePeerId(idStr)
+      }
       if (!this.peer) return
       if (!this.dataConnections.has(peerId)) return
       this.dataConnections.get(peerId).close()
@@ -1732,19 +1727,33 @@
     }
 
     isOtherPeerConnected ({ ID }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
-      return this._isOtherPeerConnected(peerId)
+      const idStr = Scratch.Cast.toString(ID)
+      // Check if the provided ID is a direct instance ID of a connected peer.
+      if (this._isOtherPeerConnected(idStr)) {
+        return true
+      }
+      // If not, resolve it as a username and check again.
+      const resolvedId = this.resolvePeerId(idStr)
+      return this._isOtherPeerConnected(resolvedId)
     }
 
     closePeerChannel ({ ID, CHANNEL }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peerId = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peerId = this.resolvePeerId(idStr)
+      }
       CHANNEL = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return
       this.dataConnections.get(peerId).channels.get(CHANNEL).chan.close()
     }
 
     async openNewPeerChannel ({ ID, CHANNEL, ORDERED }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peerId = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peerId = this.resolvePeerId(idStr)
+      }
       CHANNEL = Scratch.Cast.toString(CHANNEL)
       if (!this.isPeerConnected()) return
       if (!this._isOtherPeerStored(peerId)) return
@@ -1798,8 +1807,13 @@
     _sendMessageToPeer(message, id, channel, opcode = 'P_MSG') {
       let target = id;
 
-      if (this.enableIdRemapper) {
-        target = this.idRemapper().get(id);
+      // If the provided ID isn't a direct connection and the remapper is on, try resolving it.
+      // This prevents resolving an instance ID back to a username.
+      if (!this.dataConnections.has(id) && this.enableIdRemapper && this.idRemapper) {
+        const resolved = this.idRemapper().get(id);
+        if (resolved) {
+          target = resolved;
+        }
       }
 
       const packet = {
@@ -1826,8 +1840,11 @@
     }
 
     getPeerStats ({ TYPE, ID }) {
-      // read the current PeerConnection's stats
-      const peer = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peer = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peer = this.resolvePeerId(idStr)
+      }
       if (!this._isOtherPeerStored(peer)) return
       const conn = this.dataConnections.get(peer)
       switch (Scratch.Cast.toString(TYPE)) {
@@ -1881,17 +1898,32 @@
     }
 
     whenSpecificPeerConnects ({ ID }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
-      return this._isOtherPeerStored(peerId)
+      const idStr = Scratch.Cast.toString(ID)
+      if (this._isOtherPeerStored(idStr)) {
+        return true
+      }
+      const resolvedId = this.resolvePeerId(idStr)
+      return this._isOtherPeerStored(resolvedId)
     }
 
     whenSpecificPeerDisconnects ({ ID }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
-      return !this._isOtherPeerStored(peerId)
+      const idStr = Scratch.Cast.toString(ID)
+      if (this._isOtherPeerStored(idStr)) {
+        // If it's stored, it's not disconnected.
+        return false
+      }
+      // It's not stored under the direct ID. Let's see if it's a username
+      // for a peer that is also not stored.
+      const resolvedId = this.resolvePeerId(idStr)
+      return !this._isOtherPeerStored(resolvedId)
     }
 
     doesPeerHaveChannel ({ ID, CHANNEL }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peerId = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peerId = this.resolvePeerId(idStr)
+      }
       CHANNEL = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return false
       const conn = this.dataConnections.get(peerId)
@@ -1900,7 +1932,11 @@
     }
 
     readPacketFromPeer ({ ID, CHANNEL }) {
-      const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+      const idStr = Scratch.Cast.toString(ID)
+      let peerId = idStr
+      if (!this.dataConnections.has(idStr)) {
+        peerId = this.resolvePeerId(idStr)
+      }
       CHANNEL = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return ''
       const conn = this.dataConnections.get(peerId)
