@@ -5,29 +5,29 @@
 // License: MIT
 
 /*
-	CloudLink Delta Core Extension
+    CloudLink Delta Core Extension
 
-	MIT License
+    MIT License
 
-	Copyright (C) 2025 CloudLink Delta.
+    Copyright (C) 2025 CloudLink Delta.
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
 
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 */
 
 /*
@@ -58,15 +58,6 @@
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-// prettier-ignore
-(()=>{function e (e,t,n,r){Object.defineProperty(e,t,{get:n,set:r,enumerable:!0,configurable:!0})}function t (e){return e&&e.__esModule?e.default:e}class n{constructor (){this.chunkedMTU=16300,this._dataCount=1,this.chunk=e=>{let t=[],n=e.byteLength,r=Math.ceil(n/this.chunkedMTU),i=0,s=0;for(;s<n;){let o=Math.min(n,s+this.chunkedMTU),a=e.slice(s,o),c={__peerData:this._dataCount,n:i,data:a,total:r};t.push(c),s=o,i++}return this._dataCount++,t}}}class r{append_buffer (e){this.flush(),this._parts.push(e)}append (e){this._pieces.push(e)}flush (){if(this._pieces.length>0){let e=new Uint8Array(this._pieces);this._parts.push(e),this._pieces=[]}}toArrayBuffer (){let e=[];for(let t of this._parts)e.push(t);return function (e){let t=0;for(let n of e)t+=n.byteLength;let n=new Uint8Array(t),r=0;for(let t of e){let e=new Uint8Array(t.buffer,t.byteOffset,t.byteLength);n.set(e,r),r+=t.byteLength}return n}(e).buffer}constructor (){this.encoder=new TextEncoder,this._pieces=[],this._parts=[]}}function i (e){return new o(e).unpack()}function s (e){let t=new a,n=t.pack(e);return n instanceof Promise?n.then(()=>t.getBuffer()):t.getBuffer()}class o{unpack (){let e,t=this.unpack_uint8();if(t<128)return t;if((224^t)<32)return(224^t)-32;if((e=160^t)<=15)return this.unpack_raw(e);if((e=176^t)<=15)return this.unpack_string(e);if((e=144^t)<=15)return this.unpack_array(e);if((e=128^t)<=15)return this.unpack_map(e);switch(t){case 192:return null;case 193:case 212:case 213:case 214:case 215:return;case 194:return!1;case 195:return!0;case 202:return this.unpack_float();case 203:return this.unpack_double();case 204:return this.unpack_uint8();case 205:return this.unpack_uint16();case 206:return this.unpack_uint32();case 207:return this.unpack_uint64();case 208:return this.unpack_int8();case 209:return this.unpack_int16();case 210:return this.unpack_int32();case 211:return this.unpack_int64();case 216:return e=this.unpack_uint16(),this.unpack_string(e);case 217:return e=this.unpack_uint32(),this.unpack_string(e);case 218:return e=this.unpack_uint16(),this.unpack_raw(e);case 219:return e=this.unpack_uint32(),this.unpack_raw(e);case 220:return e=this.unpack_uint16(),this.unpack_array(e);case 221:return e=this.unpack_uint32(),this.unpack_array(e);case 222:return e=this.unpack_uint16(),this.unpack_map(e);case 223:return e=this.unpack_uint32(),this.unpack_map(e)}}unpack_uint8 (){let e=255&this.dataView[this.index];return this.index++,e}unpack_uint16 (){let e=this.read(2),t=(255&e[0])*256+(255&e[1]);return this.index+=2,t}unpack_uint32 (){let e=this.read(4),t=((256*e[0]+e[1])*256+e[2])*256+e[3];return this.index+=4,t}unpack_uint64 (){let e=this.read(8),t=((((((256*e[0]+e[1])*256+e[2])*256+e[3])*256+e[4])*256+e[5])*256+e[6])*256+e[7];return this.index+=8,t}unpack_int8 (){let e=this.unpack_uint8();return e<128?e:e-256}unpack_int16 (){let e=this.unpack_uint16();return e<32768?e:e-65536}unpack_int32 (){let e=this.unpack_uint32();return e<0x80000000?e:e-0x100000000}unpack_int64 (){let e=this.unpack_uint64();return e<0x8000000000000000?e:e-0xffffffffffffffff}unpack_raw (e){if(this.length<this.index+e)throw Error(`BinaryPackFailure: index is out of range ${this.index} ${e} ${this.length}`);let t=this.dataBuffer.slice(this.index,this.index+e);return this.index+=e,t}unpack_string (e){let t,n,r=this.read(e),i=0,s="";for(;i<e;)(t=r[i])<160?(n=t,i++):(192^t)<32?(n=(31&t)<<6|63&r[i+1],i+=2):(224^t)<16?(n=(15&t)<<12|(63&r[i+1])<<6|63&r[i+2],i+=3):(n=(7&t)<<18|(63&r[i+1])<<12|(63&r[i+2])<<6|63&r[i+3],i+=4),s+=String.fromCodePoint(n);return this.index+=e,s}unpack_array (e){let t=Array(e);for(let n=0;n<e;n++)t[n]=this.unpack();return t}unpack_map (e){let t={};for(let n=0;n<e;n++)t[this.unpack()]=this.unpack();return t}unpack_float (){let e=this.unpack_uint32();return(0==e>>31?1:-1)*(8388607&e|8388608)*2**((e>>23&255)-127-23)}unpack_double (){let e=this.unpack_uint32(),t=this.unpack_uint32(),n=(e>>20&2047)-1023;return(0==e>>31?1:-1)*((1048575&e|1048576)*2**(n-20)+t*2**(n-52))}read (e){let t=this.index;if(t+e<=this.length)return this.dataView.subarray(t,t+e);throw Error("BinaryPackFailure: read index out of range")}constructor (e){this.index=0,this.dataBuffer=e,this.dataView=new Uint8Array(this.dataBuffer),this.length=this.dataBuffer.byteLength}}class a{getBuffer (){return this._bufferBuilder.toArrayBuffer()}pack (e){if("string"==typeof e)this.pack_string(e);else if("number"==typeof e)Math.floor(e)===e?this.pack_integer(e):this.pack_double(e);else if("boolean"==typeof e)!0===e?this._bufferBuilder.append(195):!1===e&&this._bufferBuilder.append(194);else if(void 0===e)this._bufferBuilder.append(192);else if("object"==typeof e)if(null===e)this._bufferBuilder.append(192);else{let t=e.constructor;if(e instanceof Array){let t=this.pack_array(e);if(t instanceof Promise)return t.then(()=>this._bufferBuilder.flush())}else if(e instanceof ArrayBuffer)this.pack_bin(new Uint8Array(e));else if("BYTES_PER_ELEMENT"in e)this.pack_bin(new Uint8Array(e.buffer,e.byteOffset,e.byteLength));else if(e instanceof Date)this.pack_string(e.toString());else if(e instanceof Blob)return e.arrayBuffer().then(e=>{this.pack_bin(new Uint8Array(e)),this._bufferBuilder.flush()});else if(t==Object||t.toString().startsWith("class")){let t=this.pack_object(e);if(t instanceof Promise)return t.then(()=>this._bufferBuilder.flush())}else throw Error(`Type "${t.toString()}" not yet supported`)}else throw Error(`Type "${typeof e}" not yet supported`);this._bufferBuilder.flush()}pack_bin (e){let t=e.length;if(t<=15)this.pack_uint8(160+t);else if(t<=65535)this._bufferBuilder.append(218),this.pack_uint16(t);else if(t<=0xffffffff)this._bufferBuilder.append(219),this.pack_uint32(t);else throw Error("Invalid length");this._bufferBuilder.append_buffer(e)}pack_string (e){let t=this._textEncoder.encode(e),n=t.length;if(n<=15)this.pack_uint8(176+n);else if(n<=65535)this._bufferBuilder.append(216),this.pack_uint16(n);else if(n<=0xffffffff)this._bufferBuilder.append(217),this.pack_uint32(n);else throw Error("Invalid length");this._bufferBuilder.append_buffer(t)}pack_array (e){let t=e.length;if(t<=15)this.pack_uint8(144+t);else if(t<=65535)this._bufferBuilder.append(220),this.pack_uint16(t);else if(t<=0xffffffff)this._bufferBuilder.append(221),this.pack_uint32(t);else throw Error("Invalid length");let n=r=>{if(r<t){let t=this.pack(e[r]);return t instanceof Promise?t.then(()=>n(r+1)):n(r+1)}};return n(0)}pack_integer (e){if(e>=-32&&e<=127)this._bufferBuilder.append(255&e);else if(e>=0&&e<=255)this._bufferBuilder.append(204),this.pack_uint8(e);else if(e>=-128&&e<=127)this._bufferBuilder.append(208),this.pack_int8(e);else if(e>=0&&e<=65535)this._bufferBuilder.append(205),this.pack_uint16(e);else if(e>=-32768&&e<=32767)this._bufferBuilder.append(209),this.pack_int16(e);else if(e>=0&&e<=0xffffffff)this._bufferBuilder.append(206),this.pack_uint32(e);else if(e>=-0x80000000&&e<=0x7fffffff)this._bufferBuilder.append(210),this.pack_int32(e);else if(e>=-0x8000000000000000&&e<=0x8000000000000000)this._bufferBuilder.append(211),this.pack_int64(e);else if(e>=0&&e<=0xffffffffffffffff)this._bufferBuilder.append(207),this.pack_uint64(e);else throw Error("Invalid integer")}pack_double (e){let t=0;e<0&&(t=1,e=-e);let n=Math.floor(Math.log(e)/Math.LN2),r=Math.floor((e/2**n-1)*0x10000000000000),i=t<<31|n+1023<<20|r/0x100000000&1048575;this._bufferBuilder.append(203),this.pack_int32(i),this.pack_int32(r%0x100000000)}pack_object (e){let t=Object.keys(e),n=t.length;if(n<=15)this.pack_uint8(128+n);else if(n<=65535)this._bufferBuilder.append(222),this.pack_uint16(n);else if(n<=0xffffffff)this._bufferBuilder.append(223),this.pack_uint32(n);else throw Error("Invalid length");let r=n=>{if(n<t.length){let i=t[n];if(e.hasOwnProperty(i)){this.pack(i);let t=this.pack(e[i]);if(t instanceof Promise)return t.then(()=>r(n+1))}return r(n+1)}};return r(0)}pack_uint8 (e){this._bufferBuilder.append(e)}pack_uint16 (e){this._bufferBuilder.append(e>>8),this._bufferBuilder.append(255&e)}pack_uint32 (e){let t=0|e;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t)}pack_uint64 (e){let t=e/0x100000000,n=e%0x100000000;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t),this._bufferBuilder.append((0xff000000&n)>>>24),this._bufferBuilder.append((0xff0000&n)>>>16),this._bufferBuilder.append((65280&n)>>>8),this._bufferBuilder.append(255&n)}pack_int8 (e){this._bufferBuilder.append(255&e)}pack_int16 (e){this._bufferBuilder.append((65280&e)>>8),this._bufferBuilder.append(255&e)}pack_int32 (e){this._bufferBuilder.append(e>>>24&255),this._bufferBuilder.append((0xff0000&e)>>>16),this._bufferBuilder.append((65280&e)>>>8),this._bufferBuilder.append(255&e)}pack_int64 (e){let t=Math.floor(e/0x100000000),n=e%0x100000000;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t),this._bufferBuilder.append((0xff000000&n)>>>24),this._bufferBuilder.append((0xff0000&n)>>>16),this._bufferBuilder.append((65280&n)>>>8),this._bufferBuilder.append(255&n)}constructor (){this._bufferBuilder=new r,this._textEncoder=new TextEncoder}}"use strict";let c=!0,p=!0;function d (e,t,n){let r=e.match(t);return r&&r.length>=n&&parseInt(r[n],10)}function l (e,t,n){if(!e.RTCPeerConnection)return;let r=e.RTCPeerConnection.prototype,i=r.addEventListener;r.addEventListener=function (e,r){if(e!==t)return i.apply(this,arguments);let s=e=>{let t=n(e);t&&(r.handleEvent?r.handleEvent(t):r(t))};return this._eventMap=this._eventMap||{},this._eventMap[t]||(this._eventMap[t]=new Map),this._eventMap[t].set(r,s),i.apply(this,[e,s])};let s=r.removeEventListener;r.removeEventListener=function (e,n){if(e!==t||!this._eventMap||!this._eventMap[t]||!this._eventMap[t].has(n))return s.apply(this,arguments);let r=this._eventMap[t].get(n);return this._eventMap[t].delete(n),0===this._eventMap[t].size&&delete this._eventMap[t],0===Object.keys(this._eventMap).length&&delete this._eventMap,s.apply(this,[e,r])},Object.defineProperty(r,"on"+t,{get (){return this["_on"+t]},set (e){this["_on"+t]&&(this.removeEventListener(t,this["_on"+t]),delete this["_on"+t]),e&&this.addEventListener(t,this["_on"+t]=e)},enumerable:!0,configurable:!0})}function h (e){return"boolean"!=typeof e?Error("Argument type: "+typeof e+". Please use a boolean."):(c=e,e?"adapter.js logging disabled":"adapter.js logging enabled")}function u (e){return"boolean"!=typeof e?Error("Argument type: "+typeof e+". Please use a boolean."):(p=!e,"adapter.js deprecation warnings "+(e?"disabled":"enabled"))}function f (){"object"==typeof window&&(c||"undefined"!=typeof console&&"function"==typeof console.log&&console.log.apply(console,arguments))}function m (e,t){p&&console.warn(e+" is deprecated, please use "+t+" instead.")}function _ (e){return"[object Object]"===Object.prototype.toString.call(e)}function g (e,t,n){let r=n?"outbound-rtp":"inbound-rtp",i=new Map;if(null===t)return i;let s=[];return e.forEach(e=>{"track"===e.type&&e.trackIdentifier===t.id&&s.push(e)}),s.forEach(t=>{e.forEach(n=>{n.type===r&&n.trackId===t.id&&function e (t,n,r){!n||r.has(n.id)||(r.set(n.id,n),Object.keys(n).forEach(i=>{i.endsWith("Id")?e(t,t.get(n[i]),r):i.endsWith("Ids")&&n[i].forEach(n=>{e(t,t.get(n),r)})}))}(e,n,i)})}),i}"use strict";var y={};function C (e,t){let n=e&&e.navigator;if(!n.mediaDevices)return;let r=function (e){if("object"!=typeof e||e.mandatory||e.optional)return e;let t={};return Object.keys(e).forEach(n=>{if("require"===n||"advanced"===n||"mediaSource"===n)return;let r="object"==typeof e[n]?e[n]:{ideal:e[n]};void 0!==r.exact&&"number"==typeof r.exact&&(r.min=r.max=r.exact);let i=function (e,t){return e?e+t.charAt(0).toUpperCase()+t.slice(1):"deviceId"===t?"sourceId":t};if(void 0!==r.ideal){t.optional=t.optional||[];let e={};"number"==typeof r.ideal?(e[i("min",n)]=r.ideal,t.optional.push(e),(e={})[i("max",n)]=r.ideal):e[i("",n)]=r.ideal,t.optional.push(e)}void 0!==r.exact&&"number"!=typeof r.exact?(t.mandatory=t.mandatory||{},t.mandatory[i("",n)]=r.exact):["min","max"].forEach(e=>{void 0!==r[e]&&(t.mandatory=t.mandatory||{},t.mandatory[i(e,n)]=r[e])})}),e.advanced&&(t.optional=(t.optional||[]).concat(e.advanced)),t},i=function (e,i){if(t.version>=61)return i(e);if((e=JSON.parse(JSON.stringify(e)))&&"object"==typeof e.audio){let t=function (e,t,n){t in e&&!(n in e)&&(e[n]=e[t],delete e[t])};t((e=JSON.parse(JSON.stringify(e))).audio,"autoGainControl","googAutoGainControl"),t(e.audio,"noiseSuppression","googNoiseSuppression"),e.audio=r(e.audio)}if(e&&"object"==typeof e.video){let s=e.video.facingMode;s=s&&("object"==typeof s?s:{ideal:s});let o=t.version<66;if(s&&("user"===s.exact||"environment"===s.exact||"user"===s.ideal||"environment"===s.ideal)&&!(n.mediaDevices.getSupportedConstraints&&n.mediaDevices.getSupportedConstraints().facingMode&&!o)){let t;if(delete e.video.facingMode,"environment"===s.exact||"environment"===s.ideal?t=["back","rear"]:("user"===s.exact||"user"===s.ideal)&&(t=["front"]),t)return n.mediaDevices.enumerateDevices().then(n=>{let o=(n=n.filter(e=>"videoinput"===e.kind)).find(e=>t.some(t=>e.label.toLowerCase().includes(t)));return!o&&n.length&&t.includes("back")&&(o=n[n.length-1]),o&&(e.video.deviceId=s.exact?{exact:o.deviceId}:{ideal:o.deviceId}),e.video=r(e.video),f("chrome: "+JSON.stringify(e)),i(e)})}e.video=r(e.video)}return f("chrome: "+JSON.stringify(e)),i(e)},s=function (e){return t.version>=64?e:{name:({PermissionDeniedError:"NotAllowedError",PermissionDismissedError:"NotAllowedError",InvalidStateError:"NotAllowedError",DevicesNotFoundError:"NotFoundError",ConstraintNotSatisfiedError:"OverconstrainedError",TrackStartError:"NotReadableError",MediaDeviceFailedDueToShutdown:"NotAllowedError",MediaDeviceKillSwitchOn:"NotAllowedError",TabCaptureError:"AbortError",ScreenCaptureError:"AbortError",DeviceCaptureError:"AbortError"})[e.name]||e.name,message:e.message,constraint:e.constraint||e.constraintName,toString (){return this.name+(this.message&&": ")+this.message}}};if(n.getUserMedia=(function (e,t,r){i(e,e=>{n.webkitGetUserMedia(e,t,e=>{r&&r(s(e))})})}).bind(n),n.mediaDevices.getUserMedia){let e=n.mediaDevices.getUserMedia.bind(n.mediaDevices);n.mediaDevices.getUserMedia=function (t){return i(t,t=>e(t).then(e=>{if(t.audio&&!e.getAudioTracks().length||t.video&&!e.getVideoTracks().length)throw e.getTracks().forEach(e=>{e.stop()}),new DOMException("","NotFoundError");return e},e=>Promise.reject(s(e))))}}}"use strict";function v (e){e.MediaStream=e.MediaStream||e.webkitMediaStream}function b (e){if("object"!=typeof e||!e.RTCPeerConnection||"ontrack"in e.RTCPeerConnection.prototype)l(e,"track",e=>(e.transceiver||Object.defineProperty(e,"transceiver",{value:{receiver:e.receiver}}),e));else{Object.defineProperty(e.RTCPeerConnection.prototype,"ontrack",{get (){return this._ontrack},set (e){this._ontrack&&this.removeEventListener("track",this._ontrack),this.addEventListener("track",this._ontrack=e)},enumerable:!0,configurable:!0});let t=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function (){return this._ontrackpoly||(this._ontrackpoly=t=>{t.stream.addEventListener("addtrack",n=>{let r;r=e.RTCPeerConnection.prototype.getReceivers?this.getReceivers().find(e=>e.track&&e.track.id===n.track.id):{track:n.track};let i=new Event("track");i.track=n.track,i.receiver=r,i.transceiver={receiver:r},i.streams=[t.stream],this.dispatchEvent(i)}),t.stream.getTracks().forEach(n=>{let r;r=e.RTCPeerConnection.prototype.getReceivers?this.getReceivers().find(e=>e.track&&e.track.id===n.id):{track:n};let i=new Event("track");i.track=n,i.receiver=r,i.transceiver={receiver:r},i.streams=[t.stream],this.dispatchEvent(i)})},this.addEventListener("addstream",this._ontrackpoly)),t.apply(this,arguments)}}}function T (e){if("object"==typeof e&&e.RTCPeerConnection&&!("getSenders"in e.RTCPeerConnection.prototype)&&"createDTMFSender"in e.RTCPeerConnection.prototype){let t=function (e,t){return{track:t,get dtmf (){return void 0===this._dtmf&&("audio"===t.kind?this._dtmf=e.createDTMFSender(t):this._dtmf=null),this._dtmf},_pc:e}};if(!e.RTCPeerConnection.prototype.getSenders){e.RTCPeerConnection.prototype.getSenders=function (){return this._senders=this._senders||[],this._senders.slice()};let n=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addTrack=function (e,r){let i=n.apply(this,arguments);return i||(i=t(this,e),this._senders.push(i)),i};let r=e.RTCPeerConnection.prototype.removeTrack;e.RTCPeerConnection.prototype.removeTrack=function (e){r.apply(this,arguments);let t=this._senders.indexOf(e);-1!==t&&this._senders.splice(t,1)}}let n=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function (e){this._senders=this._senders||[],n.apply(this,[e]),e.getTracks().forEach(e=>{this._senders.push(t(this,e))})};let r=e.RTCPeerConnection.prototype.removeStream;e.RTCPeerConnection.prototype.removeStream=function (e){this._senders=this._senders||[],r.apply(this,[e]),e.getTracks().forEach(e=>{let t=this._senders.find(t=>t.track===e);t&&this._senders.splice(this._senders.indexOf(t),1)})}}else if("object"==typeof e&&e.RTCPeerConnection&&"getSenders"in e.RTCPeerConnection.prototype&&"createDTMFSender"in e.RTCPeerConnection.prototype&&e.RTCRtpSender&&!("dtmf"in e.RTCRtpSender.prototype)){let t=e.RTCPeerConnection.prototype.getSenders;e.RTCPeerConnection.prototype.getSenders=function (){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e},Object.defineProperty(e.RTCRtpSender.prototype,"dtmf",{get (){return void 0===this._dtmf&&("audio"===this.track.kind?this._dtmf=this._pc.createDTMFSender(this.track):this._dtmf=null),this._dtmf}})}}function S (e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender&&e.RTCRtpReceiver))return;if(!("getStats"in e.RTCRtpSender.prototype)){let t=e.RTCPeerConnection.prototype.getSenders;t&&(e.RTCPeerConnection.prototype.getSenders=function (){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e});let n=e.RTCPeerConnection.prototype.addTrack;n&&(e.RTCPeerConnection.prototype.addTrack=function (){let e=n.apply(this,arguments);return e._pc=this,e}),e.RTCRtpSender.prototype.getStats=function (){let e=this;return this._pc.getStats().then(t=>g(t,e.track,!0))}}if(!("getStats"in e.RTCRtpReceiver.prototype)){let t=e.RTCPeerConnection.prototype.getReceivers;t&&(e.RTCPeerConnection.prototype.getReceivers=function (){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e}),l(e,"track",e=>(e.receiver._pc=e.srcElement,e)),e.RTCRtpReceiver.prototype.getStats=function (){let e=this;return this._pc.getStats().then(t=>g(t,e.track,!1))}}if(!("getStats"in e.RTCRtpSender.prototype&&"getStats"in e.RTCRtpReceiver.prototype))return;let t=e.RTCPeerConnection.prototype.getStats;e.RTCPeerConnection.prototype.getStats=function (){if(arguments.length>0&&arguments[0]instanceof e.MediaStreamTrack){let e,t,n,r=arguments[0];return(this.getSenders().forEach(t=>{t.track===r&&(e?n=!0:e=t)}),this.getReceivers().forEach(e=>(e.track===r&&(t?n=!0:t=e),e.track===r)),n||e&&t)?Promise.reject(new DOMException("There are more than one sender or receiver for the track.","InvalidAccessError")):e?e.getStats():t?t.getStats():Promise.reject(new DOMException("There is no sender or receiver for the track.","InvalidAccessError"))}return t.apply(this,arguments)}}function k (e){e.RTCPeerConnection.prototype.getLocalStreams=function (){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},Object.keys(this._shimmedLocalStreams).map(e=>this._shimmedLocalStreams[e][0])};let t=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addTrack=function (e,n){if(!n)return t.apply(this,arguments);this._shimmedLocalStreams=this._shimmedLocalStreams||{};let r=t.apply(this,arguments);return this._shimmedLocalStreams[n.id]?-1===this._shimmedLocalStreams[n.id].indexOf(r)&&this._shimmedLocalStreams[n.id].push(r):this._shimmedLocalStreams[n.id]=[n,r],r};let n=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function (e){this._shimmedLocalStreams=this._shimmedLocalStreams||{},e.getTracks().forEach(e=>{if(this.getSenders().find(t=>t.track===e))throw new DOMException("Track already exists.","InvalidAccessError")});let t=this.getSenders();n.apply(this,arguments);let r=this.getSenders().filter(e=>-1===t.indexOf(e));this._shimmedLocalStreams[e.id]=[e].concat(r)};let r=e.RTCPeerConnection.prototype.removeStream;e.RTCPeerConnection.prototype.removeStream=function (e){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},delete this._shimmedLocalStreams[e.id],r.apply(this,arguments)};let i=e.RTCPeerConnection.prototype.removeTrack;e.RTCPeerConnection.prototype.removeTrack=function (e){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},e&&Object.keys(this._shimmedLocalStreams).forEach(t=>{let n=this._shimmedLocalStreams[t].indexOf(e);-1!==n&&this._shimmedLocalStreams[t].splice(n,1),1===this._shimmedLocalStreams[t].length&&delete this._shimmedLocalStreams[t]}),i.apply(this,arguments)}}function R (e,t){if(!e.RTCPeerConnection)return;if(e.RTCPeerConnection.prototype.addTrack&&t.version>=65)return k(e);let n=e.RTCPeerConnection.prototype.getLocalStreams;e.RTCPeerConnection.prototype.getLocalStreams=function (){let e=n.apply(this);return this._reverseStreams=this._reverseStreams||{},e.map(e=>this._reverseStreams[e.id])};let r=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function (t){if(this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{},t.getTracks().forEach(e=>{if(this.getSenders().find(t=>t.track===e))throw new DOMException("Track already exists.","InvalidAccessError")}),!this._reverseStreams[t.id]){let n=new e.MediaStream(t.getTracks());this._streams[t.id]=n,this._reverseStreams[n.id]=t,t=n}r.apply(this,[t])};let i=e.RTCPeerConnection.prototype.removeStream;function s (e,t){let n=t.sdp;return Object.keys(e._reverseStreams||[]).forEach(t=>{let r=e._reverseStreams[t],i=e._streams[r.id];n=n.replace(RegExp(i.id,"g"),r.id)}),new RTCSessionDescription({type:t.type,sdp:n})}e.RTCPeerConnection.prototype.removeStream=function (e){this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{},i.apply(this,[this._streams[e.id]||e]),delete this._reverseStreams[this._streams[e.id]?this._streams[e.id].id:e.id],delete this._streams[e.id]},e.RTCPeerConnection.prototype.addTrack=function (t,n){if("closed"===this.signalingState)throw new DOMException("The RTCPeerConnection's signalingState is 'closed'.","InvalidStateError");let r=[].slice.call(arguments,1);if(1!==r.length||!r[0].getTracks().find(e=>e===t))throw new DOMException("The adapter.js addTrack polyfill only supports a single  stream which is associated with the specified track.","NotSupportedError");if(this.getSenders().find(e=>e.track===t))throw new DOMException("Track already exists.","InvalidAccessError");this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{};let i=this._streams[n.id];if(i)i.addTrack(t),Promise.resolve().then(()=>{this.dispatchEvent(new Event("negotiationneeded"))});else{let r=new e.MediaStream([t]);this._streams[n.id]=r,this._reverseStreams[r.id]=n,this.addStream(r)}return this.getSenders().find(e=>e.track===t)},["createOffer","createAnswer"].forEach(function (t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t] (){let e=arguments,t=arguments.length&&"function"==typeof arguments[0];return t?n.apply(this,[t=>{let n=s(this,t);e[0].apply(null,[n])},t=>{e[1]&&e[1].apply(null,t)},arguments[2]]):n.apply(this,arguments).then(e=>s(this,e))}})[t]});let o=e.RTCPeerConnection.prototype.setLocalDescription;e.RTCPeerConnection.prototype.setLocalDescription=function (){var e,t;let n;return arguments.length&&arguments[0].type?(arguments[0]=(e=this,t=arguments[0],n=t.sdp,Object.keys(e._reverseStreams||[]).forEach(t=>{let r=e._reverseStreams[t],i=e._streams[r.id];n=n.replace(RegExp(r.id,"g"),i.id)}),new RTCSessionDescription({type:t.type,sdp:n})),o.apply(this,arguments)):o.apply(this,arguments)};let a=Object.getOwnPropertyDescriptor(e.RTCPeerConnection.prototype,"localDescription");Object.defineProperty(e.RTCPeerConnection.prototype,"localDescription",{get (){let e=a.get.apply(this);return""===e.type?e:s(this,e)}}),e.RTCPeerConnection.prototype.removeTrack=function (e){let t;if("closed"===this.signalingState)throw new DOMException("The RTCPeerConnection's signalingState is 'closed'.","InvalidStateError");if(!e._pc)throw new DOMException("Argument 1 of RTCPeerConnection.removeTrack does not implement interface RTCRtpSender.","TypeError");if(e._pc!==this)throw new DOMException("Sender was not created by this connection.","InvalidAccessError");this._streams=this._streams||{},Object.keys(this._streams).forEach(n=>{this._streams[n].getTracks().find(t=>e.track===t)&&(t=this._streams[n])}),t&&(1===t.getTracks().length?this.removeStream(this._reverseStreams[t.id]):t.removeTrack(e.track),this.dispatchEvent(new Event("negotiationneeded")))}}function P (e,t){!e.RTCPeerConnection&&e.webkitRTCPeerConnection&&(e.RTCPeerConnection=e.webkitRTCPeerConnection),e.RTCPeerConnection&&t.version<53&&["setLocalDescription","setRemoteDescription","addIceCandidate"].forEach(function (t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t] (){return arguments[0]=new("addIceCandidate"===t?e.RTCIceCandidate:e.RTCSessionDescription)(arguments[0]),n.apply(this,arguments)}})[t]})}function w (e,t){l(e,"negotiationneeded",e=>{let n=e.target;if(!(t.version<72)&&(!n.getConfiguration||"plan-b"!==n.getConfiguration().sdpSemantics)||"stable"===n.signalingState)return e})}"use strict";e(y,"shimMediaStream",()=>v),e(y,"shimOnTrack",()=>b),e(y,"shimGetSendersWithDtmf",()=>T),e(y,"shimSenderReceiverGetStats",()=>S),e(y,"shimAddTrackRemoveTrackWithNative",()=>k),e(y,"shimAddTrackRemoveTrack",()=>R),e(y,"shimPeerConnection",()=>P),e(y,"fixNegotiationNeeded",()=>w),e(y,"shimGetUserMedia",()=>C);var E={};function x (e,t){let n=e&&e.navigator,r=e&&e.MediaStreamTrack;if(n.getUserMedia=function (e,t,r){m("navigator.getUserMedia","navigator.mediaDevices.getUserMedia"),n.mediaDevices.getUserMedia(e).then(t,r)},!(t.version>55&&"autoGainControl"in n.mediaDevices.getSupportedConstraints())){let e=function (e,t,n){t in e&&!(n in e)&&(e[n]=e[t],delete e[t])},t=n.mediaDevices.getUserMedia.bind(n.mediaDevices);if(n.mediaDevices.getUserMedia=function (n){return"object"==typeof n&&"object"==typeof n.audio&&(e((n=JSON.parse(JSON.stringify(n))).audio,"autoGainControl","mozAutoGainControl"),e(n.audio,"noiseSuppression","mozNoiseSuppression")),t(n)},r&&r.prototype.getSettings){let t=r.prototype.getSettings;r.prototype.getSettings=function (){let n=t.apply(this,arguments);return e(n,"mozAutoGainControl","autoGainControl"),e(n,"mozNoiseSuppression","noiseSuppression"),n}}if(r&&r.prototype.applyConstraints){let t=r.prototype.applyConstraints;r.prototype.applyConstraints=function (n){return"audio"===this.kind&&"object"==typeof n&&(e(n=JSON.parse(JSON.stringify(n)),"autoGainControl","mozAutoGainControl"),e(n,"noiseSuppression","mozNoiseSuppression")),t.apply(this,[n])}}}}"use strict";function D (e,t){e.navigator.mediaDevices&&"getDisplayMedia"in e.navigator.mediaDevices||e.navigator.mediaDevices&&(e.navigator.mediaDevices.getDisplayMedia=function (n){if(!(n&&n.video)){let e=new DOMException("getDisplayMedia without video constraints is undefined");return e.name="NotFoundError",e.code=8,Promise.reject(e)}return!0===n.video?n.video={mediaSource:t}:n.video.mediaSource=t,e.navigator.mediaDevices.getUserMedia(n)})}"use strict";function I (e){"object"==typeof e&&e.RTCTrackEvent&&"receiver"in e.RTCTrackEvent.prototype&&!("transceiver"in e.RTCTrackEvent.prototype)&&Object.defineProperty(e.RTCTrackEvent.prototype,"transceiver",{get (){return{receiver:this.receiver}}})}function M (e,t){if("object"!=typeof e||!(e.RTCPeerConnection||e.mozRTCPeerConnection))return;!e.RTCPeerConnection&&e.mozRTCPeerConnection&&(e.RTCPeerConnection=e.mozRTCPeerConnection),t.version<53&&["setLocalDescription","setRemoteDescription","addIceCandidate"].forEach(function (t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t] (){return arguments[0]=new("addIceCandidate"===t?e.RTCIceCandidate:e.RTCSessionDescription)(arguments[0]),n.apply(this,arguments)}})[t]});let n={inboundrtp:"inbound-rtp",outboundrtp:"outbound-rtp",candidatepair:"candidate-pair",localcandidate:"local-candidate",remotecandidate:"remote-candidate"},r=e.RTCPeerConnection.prototype.getStats;e.RTCPeerConnection.prototype.getStats=function (){let[e,i,s]=arguments;return r.apply(this,[e||null]).then(e=>{if(t.version<53&&!i)try{e.forEach(e=>{e.type=n[e.type]||e.type})}catch(t){if("TypeError"!==t.name)throw t;e.forEach((t,r)=>{e.set(r,Object.assign({},t,{type:n[t.type]||t.type}))})}return e}).then(i,s)}}function O (e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender)||e.RTCRtpSender&&"getStats"in e.RTCRtpSender.prototype)return;let t=e.RTCPeerConnection.prototype.getSenders;t&&(e.RTCPeerConnection.prototype.getSenders=function (){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e});let n=e.RTCPeerConnection.prototype.addTrack;n&&(e.RTCPeerConnection.prototype.addTrack=function (){let e=n.apply(this,arguments);return e._pc=this,e}),e.RTCRtpSender.prototype.getStats=function (){return this.track?this._pc.getStats(this.track):Promise.resolve(new Map)}}function L (e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender)||e.RTCRtpSender&&"getStats"in e.RTCRtpReceiver.prototype)return;let t=e.RTCPeerConnection.prototype.getReceivers;t&&(e.RTCPeerConnection.prototype.getReceivers=function (){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e}),l(e,"track",e=>(e.receiver._pc=e.srcElement,e)),e.RTCRtpReceiver.prototype.getStats=function (){return this._pc.getStats(this.track)}}function A (e){!e.RTCPeerConnection||"removeStream"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.removeStream=function (e){m("removeStream","removeTrack"),this.getSenders().forEach(t=>{t.track&&e.getTracks().includes(t.track)&&this.removeTrack(t)})})}function j (e){e.DataChannel&&!e.RTCDataChannel&&(e.RTCDataChannel=e.DataChannel)}function B (e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.addTransceiver;t&&(e.RTCPeerConnection.prototype.addTransceiver=function (){this.setParametersPromises=[];let e=arguments[1]&&arguments[1].sendEncodings;void 0===e&&(e=[]);let n=(e=[...e]).length>0;n&&e.forEach(e=>{if("rid"in e&&!/^[a-z0-9]{0,16}$/i.test(e.rid))throw TypeError("Invalid RID value provided.");if("scaleResolutionDownBy"in e&&!(parseFloat(e.scaleResolutionDownBy)>=1))throw RangeError("scale_resolution_down_by must be >= 1.0");if("maxFramerate"in e&&!(parseFloat(e.maxFramerate)>=0))throw RangeError("max_framerate must be >= 0.0")});let r=t.apply(this,arguments);if(n){let{sender:t}=r,n=t.getParameters();"encodings"in n&&(1!==n.encodings.length||0!==Object.keys(n.encodings[0]).length)||(n.encodings=e,t.sendEncodings=e,this.setParametersPromises.push(t.setParameters(n).then(()=>{delete t.sendEncodings}).catch(()=>{delete t.sendEncodings})))}return r})}function U (e){if(!("object"==typeof e&&e.RTCRtpSender))return;let t=e.RTCRtpSender.prototype.getParameters;t&&(e.RTCRtpSender.prototype.getParameters=function (){let e=t.apply(this,arguments);return"encodings"in e||(e.encodings=[].concat(this.sendEncodings||[{}])),e})}function F (e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.createOffer;e.RTCPeerConnection.prototype.createOffer=function (){return this.setParametersPromises&&this.setParametersPromises.length?Promise.all(this.setParametersPromises).then(()=>t.apply(this,arguments)).finally(()=>{this.setParametersPromises=[]}):t.apply(this,arguments)}}function N (e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.createAnswer;e.RTCPeerConnection.prototype.createAnswer=function (){return this.setParametersPromises&&this.setParametersPromises.length?Promise.all(this.setParametersPromises).then(()=>t.apply(this,arguments)).finally(()=>{this.setParametersPromises=[]}):t.apply(this,arguments)}}"use strict";e(E,"shimOnTrack",()=>I),e(E,"shimPeerConnection",()=>M),e(E,"shimSenderGetStats",()=>O),e(E,"shimReceiverGetStats",()=>L),e(E,"shimRemoveStream",()=>A),e(E,"shimRTCDataChannel",()=>j),e(E,"shimAddTransceiver",()=>B),e(E,"shimGetParameters",()=>U),e(E,"shimCreateOffer",()=>F),e(E,"shimCreateAnswer",()=>N),e(E,"shimGetUserMedia",()=>x),e(E,"shimGetDisplayMedia",()=>D);var z={};function $ (e){if("object"==typeof e&&e.RTCPeerConnection){if("getLocalStreams"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.getLocalStreams=function (){return this._localStreams||(this._localStreams=[]),this._localStreams}),!("addStream"in e.RTCPeerConnection.prototype)){let t=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addStream=function (e){this._localStreams||(this._localStreams=[]),this._localStreams.includes(e)||this._localStreams.push(e),e.getAudioTracks().forEach(n=>t.call(this,n,e)),e.getVideoTracks().forEach(n=>t.call(this,n,e))},e.RTCPeerConnection.prototype.addTrack=function (e,...n){return n&&n.forEach(e=>{this._localStreams?this._localStreams.includes(e)||this._localStreams.push(e):this._localStreams=[e]}),t.apply(this,arguments)}}"removeStream"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.removeStream=function (e){this._localStreams||(this._localStreams=[]);let t=this._localStreams.indexOf(e);if(-1===t)return;this._localStreams.splice(t,1);let n=e.getTracks();this.getSenders().forEach(e=>{n.includes(e.track)&&this.removeTrack(e)})})}}function V (e){if("object"==typeof e&&e.RTCPeerConnection&&("getRemoteStreams"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.getRemoteStreams=function (){return this._remoteStreams?this._remoteStreams:[]}),!("onaddstream"in e.RTCPeerConnection.prototype))){Object.defineProperty(e.RTCPeerConnection.prototype,"onaddstream",{get (){return this._onaddstream},set (e){this._onaddstream&&(this.removeEventListener("addstream",this._onaddstream),this.removeEventListener("track",this._onaddstreampoly)),this.addEventListener("addstream",this._onaddstream=e),this.addEventListener("track",this._onaddstreampoly=e=>{e.streams.forEach(e=>{if(this._remoteStreams||(this._remoteStreams=[]),this._remoteStreams.includes(e))return;this._remoteStreams.push(e);let t=new Event("addstream");t.stream=e,this.dispatchEvent(t)})})}});let t=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function (){let e=this;return this._onaddstreampoly||this.addEventListener("track",this._onaddstreampoly=function (t){t.streams.forEach(t=>{if(e._remoteStreams||(e._remoteStreams=[]),e._remoteStreams.indexOf(t)>=0)return;e._remoteStreams.push(t);let n=new Event("addstream");n.stream=t,e.dispatchEvent(n)})}),t.apply(e,arguments)}}}function G (e){if("object"!=typeof e||!e.RTCPeerConnection)return;let t=e.RTCPeerConnection.prototype,n=t.createOffer,r=t.createAnswer,i=t.setLocalDescription,s=t.setRemoteDescription,o=t.addIceCandidate;t.createOffer=function (e,t){let r=arguments.length>=2?arguments[2]:arguments[0],i=n.apply(this,[r]);return t?(i.then(e,t),Promise.resolve()):i},t.createAnswer=function (e,t){let n=arguments.length>=2?arguments[2]:arguments[0],i=r.apply(this,[n]);return t?(i.then(e,t),Promise.resolve()):i};let a=function (e,t,n){let r=i.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r};t.setLocalDescription=a,t.setRemoteDescription=a=function (e,t,n){let r=s.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r},t.addIceCandidate=function (e,t,n){let r=o.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r}}function J (e){let t=e&&e.navigator;if(t.mediaDevices&&t.mediaDevices.getUserMedia){let e=t.mediaDevices,n=e.getUserMedia.bind(e);t.mediaDevices.getUserMedia=e=>n(W(e))}!t.getUserMedia&&t.mediaDevices&&t.mediaDevices.getUserMedia&&(t.getUserMedia=(function (e,n,r){t.mediaDevices.getUserMedia(e).then(n,r)}).bind(t))}function W (e){return e&&void 0!==e.video?Object.assign({},e,{video:function e (t){return _(t)?Object.keys(t).reduce(function (n,r){let i=_(t[r]),s=i?e(t[r]):t[r],o=i&&!Object.keys(s).length;return void 0===s||o?n:Object.assign(n,{[r]:s})},{}):t}(e.video)}):e}function Y (e){if(!e.RTCPeerConnection)return;let t=e.RTCPeerConnection;e.RTCPeerConnection=function (e,n){if(e&&e.iceServers){let t=[];for(let n=0;n<e.iceServers.length;n++){let r=e.iceServers[n];void 0===r.urls&&r.url?(m("RTCIceServer.url","RTCIceServer.urls"),(r=JSON.parse(JSON.stringify(r))).urls=r.url,delete r.url,t.push(r)):t.push(e.iceServers[n])}e.iceServers=t}return new t(e,n)},e.RTCPeerConnection.prototype=t.prototype,"generateCertificate"in t&&Object.defineProperty(e.RTCPeerConnection,"generateCertificate",{get:()=>t.generateCertificate})}function H (e){"object"==typeof e&&e.RTCTrackEvent&&"receiver"in e.RTCTrackEvent.prototype&&!("transceiver"in e.RTCTrackEvent.prototype)&&Object.defineProperty(e.RTCTrackEvent.prototype,"transceiver",{get (){return{receiver:this.receiver}}})}function K (e){let t=e.RTCPeerConnection.prototype.createOffer;e.RTCPeerConnection.prototype.createOffer=function (e){if(e){void 0!==e.offerToReceiveAudio&&(e.offerToReceiveAudio=!!e.offerToReceiveAudio);let t=this.getTransceivers().find(e=>"audio"===e.receiver.track.kind);!1===e.offerToReceiveAudio&&t?"sendrecv"===t.direction?t.setDirection?t.setDirection("sendonly"):t.direction="sendonly":"recvonly"===t.direction&&(t.setDirection?t.setDirection("inactive"):t.direction="inactive"):!0!==e.offerToReceiveAudio||t||this.addTransceiver("audio",{direction:"recvonly"}),void 0!==e.offerToReceiveVideo&&(e.offerToReceiveVideo=!!e.offerToReceiveVideo);let n=this.getTransceivers().find(e=>"video"===e.receiver.track.kind);!1===e.offerToReceiveVideo&&n?"sendrecv"===n.direction?n.setDirection?n.setDirection("sendonly"):n.direction="sendonly":"recvonly"===n.direction&&(n.setDirection?n.setDirection("inactive"):n.direction="inactive"):!0!==e.offerToReceiveVideo||n||this.addTransceiver("video",{direction:"recvonly"})}return t.apply(this,arguments)}}function X (e){"object"!=typeof e||e.AudioContext||(e.AudioContext=e.webkitAudioContext)}e(z,"shimLocalStreamsAPI",()=>$),e(z,"shimRemoteStreamsAPI",()=>V),e(z,"shimCallbacksAPI",()=>G),e(z,"shimGetUserMedia",()=>J),e(z,"shimConstraints",()=>W),e(z,"shimRTCIceServerUrls",()=>Y),e(z,"shimTrackEventTransceiver",()=>H),e(z,"shimCreateOfferLegacy",()=>K),e(z,"shimAudioContext",()=>X);var Q={};"use strict";e(Q,"shimRTCIceCandidate",()=>ee),e(Q,"shimRTCIceCandidateRelayProtocol",()=>et),e(Q,"shimMaxMessageSize",()=>en),e(Q,"shimSendThrowTypeError",()=>er),e(Q,"shimConnectionState",()=>ei),e(Q,"removeExtmapAllowMixed",()=>es),e(Q,"shimAddIceCandidateNullOrEmpty",()=>eo),e(Q,"shimParameterlessSetLocalDescription",()=>ea);var q={};"use strict";let Z={};function ee (e){if(!e.RTCIceCandidate||e.RTCIceCandidate&&"foundation"in e.RTCIceCandidate.prototype)return;let n=e.RTCIceCandidate;e.RTCIceCandidate=function (e){if("object"==typeof e&&e.candidate&&0===e.candidate.indexOf("a=")&&((e=JSON.parse(JSON.stringify(e))).candidate=e.candidate.substring(2)),e.candidate&&e.candidate.length){let r=new n(e),i=t(q).parseCandidate(e.candidate);for(let e in i)e in r||Object.defineProperty(r,e,{value:i[e]});return r.toJSON=function (){return{candidate:r.candidate,sdpMid:r.sdpMid,sdpMLineIndex:r.sdpMLineIndex,usernameFragment:r.usernameFragment}},r}return new n(e)},e.RTCIceCandidate.prototype=n.prototype,l(e,"icecandidate",t=>(t.candidate&&Object.defineProperty(t,"candidate",{value:new e.RTCIceCandidate(t.candidate),writable:"false"}),t))}function et (e){!e.RTCIceCandidate||e.RTCIceCandidate&&"relayProtocol"in e.RTCIceCandidate.prototype||l(e,"icecandidate",e=>{if(e.candidate){let n=t(q).parseCandidate(e.candidate.candidate);"relay"===n.type&&(e.candidate.relayProtocol=({0:"tls",1:"tcp",2:"udp"})[n.priority>>24])}return e})}function en (e,n){if(!e.RTCPeerConnection)return;"sctp"in e.RTCPeerConnection.prototype||Object.defineProperty(e.RTCPeerConnection.prototype,"sctp",{get (){return void 0===this._sctp?null:this._sctp}});let r=function (e){if(!e||!e.sdp)return!1;let n=t(q).splitSections(e.sdp);return n.shift(),n.some(e=>{let n=t(q).parseMLine(e);return n&&"application"===n.kind&&-1!==n.protocol.indexOf("SCTP")})},i=function (e){let t=e.sdp.match(/mozilla...THIS_IS_SDPARTA-(\d+)/);if(null===t||t.length<2)return -1;let n=parseInt(t[1],10);return n!=n?-1:n},s=function (e){let t=65536;return"firefox"===n.browser&&(t=n.version<57?-1===e?16384:0x7ffffff5:n.version<60?57===n.version?65535:65536:0x7ffffff5),t},o=function (e,r){let i=65536;"firefox"===n.browser&&57===n.version&&(i=65535);let s=t(q).matchPrefix(e.sdp,"a=max-message-size:");return s.length>0?i=parseInt(s[0].substring(19),10):"firefox"===n.browser&&-1!==r&&(i=0x7ffffff5),i},a=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function (){if(this._sctp=null,"chrome"===n.browser&&n.version>=76){let{sdpSemantics:e}=this.getConfiguration();"plan-b"===e&&Object.defineProperty(this,"sctp",{get (){return void 0===this._sctp?null:this._sctp},enumerable:!0,configurable:!0})}if(r(arguments[0])){let e,t=i(arguments[0]),n=s(t),r=o(arguments[0],t);e=0===n&&0===r?Number.POSITIVE_INFINITY:0===n||0===r?Math.max(n,r):Math.min(n,r);let a={};Object.defineProperty(a,"maxMessageSize",{get:()=>e}),this._sctp=a}return a.apply(this,arguments)}}function er (e){if(!(e.RTCPeerConnection&&"createDataChannel"in e.RTCPeerConnection.prototype))return;function t (e,t){let n=e.send;e.send=function (){let r=arguments[0],i=r.length||r.size||r.byteLength;if("open"===e.readyState&&t.sctp&&i>t.sctp.maxMessageSize)throw TypeError("Message too large (can send a maximum of "+t.sctp.maxMessageSize+" bytes)");return n.apply(e,arguments)}}let n=e.RTCPeerConnection.prototype.createDataChannel;e.RTCPeerConnection.prototype.createDataChannel=function (){let e=n.apply(this,arguments);return t(e,this),e},l(e,"datachannel",e=>(t(e.channel,e.target),e))}function ei (e){if(!e.RTCPeerConnection||"connectionState"in e.RTCPeerConnection.prototype)return;let t=e.RTCPeerConnection.prototype;Object.defineProperty(t,"connectionState",{get (){return({completed:"connected",checking:"connecting"})[this.iceConnectionState]||this.iceConnectionState},enumerable:!0,configurable:!0}),Object.defineProperty(t,"onconnectionstatechange",{get (){return this._onconnectionstatechange||null},set (e){this._onconnectionstatechange&&(this.removeEventListener("connectionstatechange",this._onconnectionstatechange),delete this._onconnectionstatechange),e&&this.addEventListener("connectionstatechange",this._onconnectionstatechange=e)},enumerable:!0,configurable:!0}),["setLocalDescription","setRemoteDescription"].forEach(e=>{let n=t[e];t[e]=function (){return this._connectionstatechangepoly||(this._connectionstatechangepoly=e=>{let t=e.target;if(t._lastConnectionState!==t.connectionState){t._lastConnectionState=t.connectionState;let n=new Event("connectionstatechange",e);t.dispatchEvent(n)}return e},this.addEventListener("iceconnectionstatechange",this._connectionstatechangepoly)),n.apply(this,arguments)}})}function es (e,t){if(!e.RTCPeerConnection||"chrome"===t.browser&&t.version>=71||"safari"===t.browser&&t.version>=605)return;let n=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function (t){if(t&&t.sdp&&-1!==t.sdp.indexOf("\na=extmap-allow-mixed")){let n=t.sdp.split("\n").filter(e=>"a=extmap-allow-mixed"!==e.trim()).join("\n");e.RTCSessionDescription&&t instanceof e.RTCSessionDescription?arguments[0]=new e.RTCSessionDescription({type:t.type,sdp:n}):t.sdp=n}return n.apply(this,arguments)}}function eo (e,t){if(!(e.RTCPeerConnection&&e.RTCPeerConnection.prototype))return;let n=e.RTCPeerConnection.prototype.addIceCandidate;n&&0!==n.length&&(e.RTCPeerConnection.prototype.addIceCandidate=function (){return arguments[0]?("chrome"===t.browser&&t.version<78||"firefox"===t.browser&&t.version<68||"safari"===t.browser)&&arguments[0]&&""===arguments[0].candidate?Promise.resolve():n.apply(this,arguments):(arguments[1]&&arguments[1].apply(null),Promise.resolve())})}function ea (e,t){if(!(e.RTCPeerConnection&&e.RTCPeerConnection.prototype))return;let n=e.RTCPeerConnection.prototype.setLocalDescription;n&&0!==n.length&&(e.RTCPeerConnection.prototype.setLocalDescription=function (){let e=arguments[0]||{};if("object"!=typeof e||e.type&&e.sdp)return n.apply(this,arguments);if(!(e={type:e.type,sdp:e.sdp}).type)switch(this.signalingState){case"stable":case"have-local-offer":case"have-remote-pranswer":e.type="offer";break;default:e.type="answer"}return e.sdp||"offer"!==e.type&&"answer"!==e.type?n.apply(this,[e]):("offer"===e.type?this.createOffer:this.createAnswer).apply(this).then(e=>n.apply(this,[e]))})}"use strict";Z.generateIdentifier=function (){return Math.random().toString(36).substring(2,12)},Z.localCName=Z.generateIdentifier(),Z.splitLines=function (e){return e.trim().split("\n").map(e=>e.trim())},Z.splitSections=function (e){return e.split("\nm=").map((e,t)=>(t>0?"m="+e:e).trim()+"\r\n")},Z.getDescription=function (e){let t=Z.splitSections(e);return t&&t[0]},Z.getMediaSections=function (e){let t=Z.splitSections(e);return t.shift(),t},Z.matchPrefix=function (e,t){return Z.splitLines(e).filter(e=>0===e.indexOf(t))},Z.parseCandidate=function (e){let t,n={foundation:(t=0===e.indexOf("a=candidate:")?e.substring(12).split(" "):e.substring(10).split(" "))[0],component:{1:"rtp",2:"rtcp"}[t[1]]||t[1],protocol:t[2].toLowerCase(),priority:parseInt(t[3],10),ip:t[4],address:t[4],port:parseInt(t[5],10),type:t[7]};for(let e=8;e<t.length;e+=2)switch(t[e]){case"raddr":n.relatedAddress=t[e+1];break;case"rport":n.relatedPort=parseInt(t[e+1],10);break;case"tcptype":n.tcpType=t[e+1];break;case"ufrag":n.ufrag=t[e+1],n.usernameFragment=t[e+1];break;default:void 0===n[t[e]]&&(n[t[e]]=t[e+1])}return n},Z.writeCandidate=function (e){let t=[];t.push(e.foundation);let n=e.component;"rtp"===n?t.push(1):"rtcp"===n?t.push(2):t.push(n),t.push(e.protocol.toUpperCase()),t.push(e.priority),t.push(e.address||e.ip),t.push(e.port);let r=e.type;return t.push("typ"),t.push(r),"host"!==r&&e.relatedAddress&&e.relatedPort&&(t.push("raddr"),t.push(e.relatedAddress),t.push("rport"),t.push(e.relatedPort)),e.tcpType&&"tcp"===e.protocol.toLowerCase()&&(t.push("tcptype"),t.push(e.tcpType)),(e.usernameFragment||e.ufrag)&&(t.push("ufrag"),t.push(e.usernameFragment||e.ufrag)),"candidate:"+t.join(" ")},Z.parseIceOptions=function (e){return e.substring(14).split(" ")},Z.parseRtpMap=function (e){let t=e.substring(9).split(" "),n={payloadType:parseInt(t.shift(),10)};return n.name=(t=t[0].split("/"))[0],n.clockRate=parseInt(t[1],10),n.channels=3===t.length?parseInt(t[2],10):1,n.numChannels=n.channels,n},Z.writeRtpMap=function (e){let t=e.payloadType;void 0!==e.preferredPayloadType&&(t=e.preferredPayloadType);let n=e.channels||e.numChannels||1;return"a=rtpmap:"+t+" "+e.name+"/"+e.clockRate+(1!==n?"/"+n:"")+"\r\n"},Z.parseExtmap=function (e){let t=e.substring(9).split(" ");return{id:parseInt(t[0],10),direction:t[0].indexOf("/")>0?t[0].split("/")[1]:"sendrecv",uri:t[1],attributes:t.slice(2).join(" ")}},Z.writeExtmap=function (e){return"a=extmap:"+(e.id||e.preferredId)+(e.direction&&"sendrecv"!==e.direction?"/"+e.direction:"")+" "+e.uri+(e.attributes?" "+e.attributes:"")+"\r\n"},Z.parseFmtp=function (e){let t,n={},r=e.substring(e.indexOf(" ")+1).split(";");for(let e=0;e<r.length;e++)n[(t=r[e].trim().split("="))[0].trim()]=t[1];return n},Z.writeFmtp=function (e){let t="",n=e.payloadType;if(void 0!==e.preferredPayloadType&&(n=e.preferredPayloadType),e.parameters&&Object.keys(e.parameters).length){let r=[];Object.keys(e.parameters).forEach(t=>{void 0!==e.parameters[t]?r.push(t+"="+e.parameters[t]):r.push(t)}),t+="a=fmtp:"+n+" "+r.join(";")+"\r\n"}return t},Z.parseRtcpFb=function (e){let t=e.substring(e.indexOf(" ")+1).split(" ");return{type:t.shift(),parameter:t.join(" ")}},Z.writeRtcpFb=function (e){let t="",n=e.payloadType;return void 0!==e.preferredPayloadType&&(n=e.preferredPayloadType),e.rtcpFeedback&&e.rtcpFeedback.length&&e.rtcpFeedback.forEach(e=>{t+="a=rtcp-fb:"+n+" "+e.type+(e.parameter&&e.parameter.length?" "+e.parameter:"")+"\r\n"}),t},Z.parseSsrcMedia=function (e){let t=e.indexOf(" "),n={ssrc:parseInt(e.substring(7,t),10)},r=e.indexOf(":",t);return r>-1?(n.attribute=e.substring(t+1,r),n.value=e.substring(r+1)):n.attribute=e.substring(t+1),n},Z.parseSsrcGroup=function (e){let t=e.substring(13).split(" ");return{semantics:t.shift(),ssrcs:t.map(e=>parseInt(e,10))}},Z.getMid=function (e){let t=Z.matchPrefix(e,"a=mid:")[0];if(t)return t.substring(6)},Z.parseFingerprint=function (e){let t=e.substring(14).split(" ");return{algorithm:t[0].toLowerCase(),value:t[1].toUpperCase()}},Z.getDtlsParameters=function (e,t){return{role:"auto",fingerprints:Z.matchPrefix(e+t,"a=fingerprint:").map(Z.parseFingerprint)}},Z.writeDtlsParameters=function (e,t){let n="a=setup:"+t+"\r\n";return e.fingerprints.forEach(e=>{n+="a=fingerprint:"+e.algorithm+" "+e.value+"\r\n"}),n},Z.parseCryptoLine=function (e){let t=e.substring(9).split(" ");return{tag:parseInt(t[0],10),cryptoSuite:t[1],keyParams:t[2],sessionParams:t.slice(3)}},Z.writeCryptoLine=function (e){return"a=crypto:"+e.tag+" "+e.cryptoSuite+" "+("object"==typeof e.keyParams?Z.writeCryptoKeyParams(e.keyParams):e.keyParams)+(e.sessionParams?" "+e.sessionParams.join(" "):"")+"\r\n"},Z.parseCryptoKeyParams=function (e){if(0!==e.indexOf("inline:"))return null;let t=e.substring(7).split("|");return{keyMethod:"inline",keySalt:t[0],lifeTime:t[1],mkiValue:t[2]?t[2].split(":")[0]:void 0,mkiLength:t[2]?t[2].split(":")[1]:void 0}},Z.writeCryptoKeyParams=function (e){return e.keyMethod+":"+e.keySalt+(e.lifeTime?"|"+e.lifeTime:"")+(e.mkiValue&&e.mkiLength?"|"+e.mkiValue+":"+e.mkiLength:"")},Z.getCryptoParameters=function (e,t){return Z.matchPrefix(e+t,"a=crypto:").map(Z.parseCryptoLine)},Z.getIceParameters=function (e,t){let n=Z.matchPrefix(e+t,"a=ice-ufrag:")[0],r=Z.matchPrefix(e+t,"a=ice-pwd:")[0];return n&&r?{usernameFragment:n.substring(12),password:r.substring(10)}:null},Z.writeIceParameters=function (e){let t="a=ice-ufrag:"+e.usernameFragment+"\r\na=ice-pwd:"+e.password+"\r\n";return e.iceLite&&(t+="a=ice-lite\r\n"),t},Z.parseRtpParameters=function (e){let t={codecs:[],headerExtensions:[],fecMechanisms:[],rtcp:[]},n=Z.splitLines(e)[0].split(" ");t.profile=n[2];for(let r=3;r<n.length;r++){let i=n[r],s=Z.matchPrefix(e,"a=rtpmap:"+i+" ")[0];if(s){let n=Z.parseRtpMap(s),r=Z.matchPrefix(e,"a=fmtp:"+i+" ");switch(n.parameters=r.length?Z.parseFmtp(r[0]):{},n.rtcpFeedback=Z.matchPrefix(e,"a=rtcp-fb:"+i+" ").map(Z.parseRtcpFb),t.codecs.push(n),n.name.toUpperCase()){case"RED":case"ULPFEC":t.fecMechanisms.push(n.name.toUpperCase())}}}Z.matchPrefix(e,"a=extmap:").forEach(e=>{t.headerExtensions.push(Z.parseExtmap(e))});let r=Z.matchPrefix(e,"a=rtcp-fb:* ").map(Z.parseRtcpFb);return t.codecs.forEach(e=>{r.forEach(t=>{e.rtcpFeedback.find(e=>e.type===t.type&&e.parameter===t.parameter)||e.rtcpFeedback.push(t)})}),t},Z.writeRtpDescription=function (e,t){let n="";n+="m="+e+" ",n+=t.codecs.length>0?"9":"0",n+=" "+(t.profile||"UDP/TLS/RTP/SAVPF")+" ",n+=t.codecs.map(e=>void 0!==e.preferredPayloadType?e.preferredPayloadType:e.payloadType).join(" ")+"\r\n",n+="c=IN IP4 0.0.0.0\r\n",n+="a=rtcp:9 IN IP4 0.0.0.0\r\n",t.codecs.forEach(e=>{n+=Z.writeRtpMap(e),n+=Z.writeFmtp(e),n+=Z.writeRtcpFb(e)});let r=0;return t.codecs.forEach(e=>{e.maxptime>r&&(r=e.maxptime)}),r>0&&(n+="a=maxptime:"+r+"\r\n"),t.headerExtensions&&t.headerExtensions.forEach(e=>{n+=Z.writeExtmap(e)}),n},Z.parseRtpEncodingParameters=function (e){let t,n=[],r=Z.parseRtpParameters(e),i=-1!==r.fecMechanisms.indexOf("RED"),s=-1!==r.fecMechanisms.indexOf("ULPFEC"),o=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"cname"===e.attribute),a=o.length>0&&o[0].ssrc,c=Z.matchPrefix(e,"a=ssrc-group:FID").map(e=>e.substring(17).split(" ").map(e=>parseInt(e,10)));c.length>0&&c[0].length>1&&c[0][0]===a&&(t=c[0][1]),r.codecs.forEach(e=>{if("RTX"===e.name.toUpperCase()&&e.parameters.apt){let r={ssrc:a,codecPayloadType:parseInt(e.parameters.apt,10)};a&&t&&(r.rtx={ssrc:t}),n.push(r),i&&((r=JSON.parse(JSON.stringify(r))).fec={ssrc:a,mechanism:s?"red+ulpfec":"red"},n.push(r))}}),0===n.length&&a&&n.push({ssrc:a});let p=Z.matchPrefix(e,"b=");return p.length&&(p=0===p[0].indexOf("b=TIAS:")?parseInt(p[0].substring(7),10):0===p[0].indexOf("b=AS:")?950*parseInt(p[0].substring(5),10)-16e3:void 0,n.forEach(e=>{e.maxBitrate=p})),n},Z.parseRtcpParameters=function (e){let t={},n=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"cname"===e.attribute)[0];n&&(t.cname=n.value,t.ssrc=n.ssrc);let r=Z.matchPrefix(e,"a=rtcp-rsize");return t.reducedSize=r.length>0,t.compound=0===r.length,t.mux=Z.matchPrefix(e,"a=rtcp-mux").length>0,t},Z.writeRtcpParameters=function (e){let t="";return e.reducedSize&&(t+="a=rtcp-rsize\r\n"),e.mux&&(t+="a=rtcp-mux\r\n"),void 0!==e.ssrc&&e.cname&&(t+="a=ssrc:"+e.ssrc+" cname:"+e.cname+"\r\n"),t},Z.parseMsid=function (e){let t,n=Z.matchPrefix(e,"a=msid:");if(1===n.length)return{stream:(t=n[0].substring(7).split(" "))[0],track:t[1]};let r=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"msid"===e.attribute);if(r.length>0)return{stream:(t=r[0].value.split(" "))[0],track:t[1]}},Z.parseSctpDescription=function (e){let t,n=Z.parseMLine(e),r=Z.matchPrefix(e,"a=max-message-size:");r.length>0&&(t=parseInt(r[0].substring(19),10)),isNaN(t)&&(t=65536);let i=Z.matchPrefix(e,"a=sctp-port:");if(i.length>0)return{port:parseInt(i[0].substring(12),10),protocol:n.fmt,maxMessageSize:t};let s=Z.matchPrefix(e,"a=sctpmap:");if(s.length>0){let e=s[0].substring(10).split(" ");return{port:parseInt(e[0],10),protocol:e[1],maxMessageSize:t}}},Z.writeSctpDescription=function (e,t){let n=[];return n="DTLS/SCTP"!==e.protocol?["m="+e.kind+" 9 "+e.protocol+" "+t.protocol+"\r\n","c=IN IP4 0.0.0.0\r\n","a=sctp-port:"+t.port+"\r\n"]:["m="+e.kind+" 9 "+e.protocol+" "+t.port+"\r\n","c=IN IP4 0.0.0.0\r\n","a=sctpmap:"+t.port+" "+t.protocol+" 65535\r\n"],void 0!==t.maxMessageSize&&n.push("a=max-message-size:"+t.maxMessageSize+"\r\n"),n.join("")},Z.generateSessionId=function (){return Math.random().toString().substr(2,22)},Z.writeSessionBoilerplate=function (e,t,n){return"v=0\r\no="+(n||"thisisadapterortc")+" "+(e||Z.generateSessionId())+" "+(void 0!==t?t:2)+" IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n"},Z.getDirection=function (e,t){let n=Z.splitLines(e);for(let e=0;e<n.length;e++)switch(n[e]){case"a=sendrecv":case"a=sendonly":case"a=recvonly":case"a=inactive":return n[e].substring(2)}return t?Z.getDirection(t):"sendrecv"},Z.getKind=function (e){return Z.splitLines(e)[0].split(" ")[0].substring(2)},Z.isRejected=function (e){return"0"===e.split(" ",2)[1]},Z.parseMLine=function (e){let t=Z.splitLines(e)[0].substring(2).split(" ");return{kind:t[0],port:parseInt(t[1],10),protocol:t[2],fmt:t.slice(3).join(" ")}},Z.parseOLine=function (e){let t=Z.matchPrefix(e,"o=")[0].substring(2).split(" ");return{username:t[0],sessionId:t[1],sessionVersion:parseInt(t[2],10),netType:t[3],addressType:t[4],address:t[5]}},Z.isValidSDP=function (e){if("string"!=typeof e||0===e.length)return!1;let t=Z.splitLines(e);for(let e=0;e<t.length;e++)if(t[e].length<2||"="!==t[e].charAt(1))return!1;return!0},q=Z;let ec=function ({window:e}={},t={shimChrome:!0,shimFirefox:!0,shimSafari:!0}){let n=function (e){let t={browser:null,version:null};if(void 0===e||!e.navigator||!e.navigator.userAgent)return t.browser="Not a browser.",t;let{navigator:n}=e;if(n.userAgentData&&n.userAgentData.brands){let e=n.userAgentData.brands.find(e=>"Chromium"===e.brand);if(e)return{browser:"chrome",version:parseInt(e.version,10)}}return n.mozGetUserMedia?(t.browser="firefox",t.version=d(n.userAgent,/Firefox\/(\d+)\./,1)):n.webkitGetUserMedia||!1===e.isSecureContext&&e.webkitRTCPeerConnection?(t.browser="chrome",t.version=d(n.userAgent,/Chrom(e|ium)\/(\d+)\./,2)):e.RTCPeerConnection&&n.userAgent.match(/AppleWebKit\/(\d+)\./)?(t.browser="safari",t.version=d(n.userAgent,/AppleWebKit\/(\d+)\./,1),t.supportsUnifiedPlan=e.RTCRtpTransceiver&&"currentDirection"in e.RTCRtpTransceiver.prototype):t.browser="Not a supported browser.",t}(e),r={browserDetails:n,commonShim:Q,extractVersion:d,disableLog:h,disableWarnings:u,sdp:q};switch(n.browser){case"chrome":if(!y||!y.shimPeerConnection||!t.shimChrome){f("Chrome shim is not included in this adapter release.");break}if(null===n.version){f("Chrome shim can not determine version, not shimming.");break}f("adapter.js shimming chrome."),r.browserShim=y,eo(e,n),ea(e,n),y.shimGetUserMedia(e,n),y.shimMediaStream(e,n),y.shimPeerConnection(e,n),y.shimOnTrack(e,n),y.shimAddTrackRemoveTrack(e,n),y.shimGetSendersWithDtmf(e,n),y.shimSenderReceiverGetStats(e,n),y.fixNegotiationNeeded(e,n),ee(e,n),et(e,n),ei(e,n),en(e,n),er(e,n),es(e,n);break;case"firefox":if(!E||!E.shimPeerConnection||!t.shimFirefox){f("Firefox shim is not included in this adapter release.");break}f("adapter.js shimming firefox."),r.browserShim=E,eo(e,n),ea(e,n),E.shimGetUserMedia(e,n),E.shimPeerConnection(e,n),E.shimOnTrack(e,n),E.shimRemoveStream(e,n),E.shimSenderGetStats(e,n),E.shimReceiverGetStats(e,n),E.shimRTCDataChannel(e,n),E.shimAddTransceiver(e,n),E.shimGetParameters(e,n),E.shimCreateOffer(e,n),E.shimCreateAnswer(e,n),ee(e,n),ei(e,n),en(e,n),er(e,n);break;case"safari":if(!z||!t.shimSafari){f("Safari shim is not included in this adapter release.");break}f("adapter.js shimming safari."),r.browserShim=z,eo(e,n),ea(e,n),z.shimRTCIceServerUrls(e,n),z.shimCreateOfferLegacy(e,n),z.shimCallbacksAPI(e,n),z.shimLocalStreamsAPI(e,n),z.shimRemoteStreamsAPI(e,n),z.shimTrackEventTransceiver(e,n),z.shimGetUserMedia(e,n),z.shimAudioContext(e,n),ee(e,n),et(e,n),en(e,n),er(e,n),es(e,n);break;default:f("Unsupported browser!")}return r}({window:"undefined"==typeof window?void 0:window}),ep=ec.default||ec,ed=new class{isWebRTCSupported (){return"undefined"!=typeof RTCPeerConnection}isBrowserSupported (){let e=this.getBrowser(),t=this.getVersion();return!!this.supportedBrowsers.includes(e)&&("chrome"===e?t>=this.minChromeVersion:"firefox"===e?t>=this.minFirefoxVersion:"safari"===e&&!this.isIOS&&t>=this.minSafariVersion)}getBrowser (){return ep.browserDetails.browser}getVersion (){return ep.browserDetails.version||0}isUnifiedPlanSupported (){let e,t=this.getBrowser(),n=ep.browserDetails.version||0;if("chrome"===t&&n<this.minChromeVersion)return!1;if("firefox"===t&&n>=this.minFirefoxVersion)return!0;if(!window.RTCRtpTransceiver||!("currentDirection"in RTCRtpTransceiver.prototype))return!1;let r=!1;try{(e=new RTCPeerConnection).addTransceiver("audio"),r=!0}catch(e){}finally{e&&e.close()}return r}toString (){return`Supports:
-    browser:${this.getBrowser()}
-    version:${this.getVersion()}
-    isIOS:${this.isIOS}
-    isWebRTCSupported:${this.isWebRTCSupported()}
-    isBrowserSupported:${this.isBrowserSupported()}
-    isUnifiedPlanSupported:${this.isUnifiedPlanSupported()}`}constructor (){this.isIOS="undefined"!=typeof navigator&&["iPad","iPhone","iPod"].includes(navigator.platform),this.supportedBrowsers=["firefox","chrome","safari"],this.minFirefoxVersion=59,this.minChromeVersion=72,this.minSafariVersion=605}},el=e=>!e||/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.test(e),eh=()=>Math.random().toString(36).slice(2),eu={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:["turn:eu-0.turn.peerjs.com:3478","turn:us-0.turn.peerjs.com:3478"],username:"peerjs",credential:"peerjsp"}],sdpSemantics:"unified-plan"},ef=new class extends n{noop (){}blobToArrayBuffer (e,t){let n=new FileReader;return n.onload=function (e){e.target&&t(e.target.result)},n.readAsArrayBuffer(e),n}binaryStringToArrayBuffer (e){let t=new Uint8Array(e.length);for(let n=0;n<e.length;n++)t[n]=255&e.charCodeAt(n);return t.buffer}isSecure (){return"https:"===location.protocol}constructor (...e){super(...e),this.CLOUD_HOST="0.peerjs.com",this.CLOUD_PORT=443,this.chunkedBrowsers={Chrome:1,chrome:1},this.defaultConfig=eu,this.browser=ed.getBrowser(),this.browserVersion=ed.getVersion(),this.pack=s,this.unpack=i,this.supports=function (){let e,t={browser:ed.isBrowserSupported(),webRTC:ed.isWebRTCSupported(),audioVideo:!1,data:!1,binaryBlob:!1,reliable:!1};if(!t.webRTC)return t;try{let n;e=new RTCPeerConnection(eu),t.audioVideo=!0;try{n=e.createDataChannel("_PEERJSTEST",{ordered:!0}),t.data=!0,t.reliable=!!n.ordered;try{n.binaryType="blob",t.binaryBlob=!ed.isIOS}catch(e){}}catch(e){}finally{n&&n.close()}}catch(e){}finally{e&&e.close()}return t}(),this.validateId=el,this.randomToken=eh}};"use strict";var em=new class{get logLevel (){return this._logLevel}set logLevel (e){this._logLevel=e}log (...e){this._logLevel>=3&&this._print(3,...e)}warn (...e){this._logLevel>=2&&this._print(2,...e)}error (...e){this._logLevel>=1&&this._print(1,...e)}setLogFunction (e){this._print=e}_print (e,...t){let n=["PeerJS: ",...t];for(let e in n)n[e]instanceof Error&&(n[e]="("+n[e].name+") "+n[e].message);e>=3?console.log(...n):e>=2?console.warn("WARNING",...n):e>=1&&console.error("ERROR",...n)}constructor (){this._logLevel=0}},e_={},eg=Object.prototype.hasOwnProperty,ey="~";function eC (){}function ev (e,t,n){this.fn=e,this.context=t,this.once=n||!1}function eb (e,t,n,r,i){if("function"!=typeof n)throw TypeError("The listener must be a function");var s=new ev(n,r||e,i),o=ey?ey+t:t;return e._events[o]?e._events[o].fn?e._events[o]=[e._events[o],s]:e._events[o].push(s):(e._events[o]=s,e._eventsCount++),e}function eT (e,t){0==--e._eventsCount?e._events=new eC:delete e._events[t]}function eS (){this._events=new eC,this._eventsCount=0}Object.create&&(eC.prototype=Object.create(null),new eC().__proto__||(ey=!1)),eS.prototype.eventNames=function (){var e,t,n=[];if(0===this._eventsCount)return n;for(t in e=this._events)eg.call(e,t)&&n.push(ey?t.slice(1):t);return Object.getOwnPropertySymbols?n.concat(Object.getOwnPropertySymbols(e)):n},eS.prototype.listeners=function (e){var t=ey?ey+e:e,n=this._events[t];if(!n)return[];if(n.fn)return[n.fn];for(var r=0,i=n.length,s=Array(i);r<i;r++)s[r]=n[r].fn;return s},eS.prototype.listenerCount=function (e){var t=ey?ey+e:e,n=this._events[t];return n?n.fn?1:n.length:0},eS.prototype.emit=function (e,t,n,r,i,s){var o=ey?ey+e:e;if(!this._events[o])return!1;var a,c,p=this._events[o],d=arguments.length;if(p.fn){switch(p.once&&this.removeListener(e,p.fn,void 0,!0),d){case 1:return p.fn.call(p.context),!0;case 2:return p.fn.call(p.context,t),!0;case 3:return p.fn.call(p.context,t,n),!0;case 4:return p.fn.call(p.context,t,n,r),!0;case 5:return p.fn.call(p.context,t,n,r,i),!0;case 6:return p.fn.call(p.context,t,n,r,i,s),!0}for(c=1,a=Array(d-1);c<d;c++)a[c-1]=arguments[c];p.fn.apply(p.context,a)}else{var l,h=p.length;for(c=0;c<h;c++)switch(p[c].once&&this.removeListener(e,p[c].fn,void 0,!0),d){case 1:p[c].fn.call(p[c].context);break;case 2:p[c].fn.call(p[c].context,t);break;case 3:p[c].fn.call(p[c].context,t,n);break;case 4:p[c].fn.call(p[c].context,t,n,r);break;default:if(!a)for(l=1,a=Array(d-1);l<d;l++)a[l-1]=arguments[l];p[c].fn.apply(p[c].context,a)}}return!0},eS.prototype.on=function (e,t,n){return eb(this,e,t,n,!1)},eS.prototype.once=function (e,t,n){return eb(this,e,t,n,!0)},eS.prototype.removeListener=function (e,t,n,r){var i=ey?ey+e:e;if(!this._events[i])return this;if(!t)return eT(this,i),this;var s=this._events[i];if(s.fn)s.fn!==t||r&&!s.once||n&&s.context!==n||eT(this,i);else{for(var o=0,a=[],c=s.length;o<c;o++)(s[o].fn!==t||r&&!s[o].once||n&&s[o].context!==n)&&a.push(s[o]);a.length?this._events[i]=1===a.length?a[0]:a:eT(this,i)}return this},eS.prototype.removeAllListeners=function (e){var t;return e?(t=ey?ey+e:e,this._events[t]&&eT(this,t)):(this._events=new eC,this._eventsCount=0),this},eS.prototype.off=eS.prototype.removeListener,eS.prototype.addListener=eS.prototype.on,eS.prefixed=ey,eS.EventEmitter=eS,e_=eS;var ek=function (e){return e.Data="data",e.Media="media",e}({}),eR=function (e){return e.BrowserIncompatible="browser-incompatible",e.Disconnected="disconnected",e.InvalidID="invalid-id",e.InvalidKey="invalid-key",e.Network="network",e.PeerUnavailable="peer-unavailable",e.SslUnavailable="ssl-unavailable",e.ServerError="server-error",e.SocketError="socket-error",e.SocketClosed="socket-closed",e.UnavailableID="unavailable-id",e.WebRTC="webrtc",e}({}),eP=function (e){return e.NegotiationFailed="negotiation-failed",e.ConnectionClosed="connection-closed",e}({}),ew=function (e){return e.NotOpenYet="not-open-yet",e.MessageToBig="message-too-big",e}({}),eE=function (e){return e.Binary="binary",e.BinaryUTF8="binary-utf8",e.JSON="json",e.None="raw",e}({}),ex=function (e){return e.Message="message",e.Disconnected="disconnected",e.Error="error",e.Close="close",e}({}),eD=function (e){return e.Heartbeat="HEARTBEAT",e.Candidate="CANDIDATE",e.Offer="OFFER",e.Answer="ANSWER",e.Open="OPEN",e.Error="ERROR",e.IdTaken="ID-TAKEN",e.InvalidKey="INVALID-KEY",e.Leave="LEAVE",e.Expire="EXPIRE",e}({});let eI="1.5.5";class eM extends e_.EventEmitter{start (e,t){this._id=e;let n=`${this._baseUrl}&id=${e}&token=${t}`;!this._socket&&this._disconnected&&(this._socket=new WebSocket(n+"&version="+eI),this._disconnected=!1,this._socket.onmessage=e=>{let t;try{t=JSON.parse(e.data),em.log("Server message received:",t)}catch(t){em.log("Invalid server message",e.data);return}this.emit(ex.Message,t)},this._socket.onclose=e=>{this._disconnected||(em.log("Socket closed.",e),this._cleanup(),this._disconnected=!0,this.emit(ex.Disconnected))},this._socket.onopen=()=>{this._disconnected||(this._sendQueuedMessages(),em.log("Socket open"),this._scheduleHeartbeat())})}_scheduleHeartbeat (){this._wsPingTimer=setTimeout(()=>{this._sendHeartbeat()},this.pingInterval)}_sendHeartbeat (){if(!this._wsOpen())return void em.log("Cannot send heartbeat, because socket closed");let e=JSON.stringify({type:eD.Heartbeat});this._socket.send(e),this._scheduleHeartbeat()}_wsOpen (){return!!this._socket&&1===this._socket.readyState}_sendQueuedMessages (){let e=[...this._messagesQueue];for(let t of(this._messagesQueue=[],e))this.send(t)}send (e){if(this._disconnected)return;if(!this._id)return void this._messagesQueue.push(e);if(!e.type)return void this.emit(ex.Error,"Invalid message");if(!this._wsOpen())return;let t=JSON.stringify(e);this._socket.send(t)}close (){this._disconnected||(this._cleanup(),this._disconnected=!0)}_cleanup (){this._socket&&(this._socket.onopen=this._socket.onmessage=this._socket.onclose=null,this._socket.close(),this._socket=void 0),clearTimeout(this._wsPingTimer)}constructor (e,t,n,r,i,s=5e3){super(),this.pingInterval=s,this._disconnected=!0,this._messagesQueue=[],this._baseUrl=(e?"wss://":"ws://")+t+":"+n+r+"peerjs?key="+i}}class eO{startConnection (e){let t=this._startPeerConnection();if(this.connection.peerConnection=t,this.connection.type===ek.Media&&e._stream&&this._addTracksToConnection(e._stream,t),e.originator){let n=this.connection,r={ordered:!!e.reliable},i=t.createDataChannel(n.label,r);n._initializeDataChannel(i),this._makeOffer()}else this.handleSDP("OFFER",e.sdp)}_startPeerConnection (){em.log("Creating RTCPeerConnection.");let e=new RTCPeerConnection(this.connection.provider.options.config);return this._setupListeners(e),e}_setupListeners (e){let t=this.connection.peer,n=this.connection.connectionId,r=this.connection.type,i=this.connection.provider;em.log("Listening for ICE candidates."),e.onicecandidate=e=>{e.candidate&&e.candidate.candidate&&(em.log(`Received ICE candidates for ${t}:`,e.candidate),i.socket.send({type:eD.Candidate,payload:{candidate:e.candidate,type:r,connectionId:n},dst:t}))},e.oniceconnectionstatechange=()=>{switch(e.iceConnectionState){case"failed":em.log("iceConnectionState is failed, closing connections to "+t),this.connection.emitError(eP.NegotiationFailed,"Negotiation of connection to "+t+" failed."),this.connection.close();break;case"closed":em.log("iceConnectionState is closed, closing connections to "+t),this.connection.emitError(eP.ConnectionClosed,"Connection to "+t+" closed."),this.connection.close();break;case"disconnected":em.log("iceConnectionState changed to disconnected on the connection with "+t);break;case"completed":e.onicecandidate=()=>{}}this.connection.emit("iceStateChanged",e.iceConnectionState)},em.log("Listening for data channel"),e.ondatachannel=e=>{em.log("Received data channel");let r=e.channel;i.getConnection(t,n)._initializeDataChannel(r)},em.log("Listening for remote stream"),e.ontrack=e=>{em.log("Received remote stream");let r=e.streams[0],s=i.getConnection(t,n);s.type===ek.Media&&this._addStreamToMediaConnection(r,s)}}cleanup (){em.log("Cleaning up PeerConnection to "+this.connection.peer);let e=this.connection.peerConnection;if(!e)return;this.connection.peerConnection=null,e.onicecandidate=e.oniceconnectionstatechange=e.ondatachannel=e.ontrack=()=>{};let t="closed"!==e.signalingState,n=!1,r=this.connection.dataChannel;r&&(n=!!r.readyState&&"closed"!==r.readyState),(t||n)&&e.close()}async _makeOffer (){let e=this.connection.peerConnection,t=this.connection.provider;try{let n=await e.createOffer(this.connection.options.constraints);em.log("Created offer."),this.connection.options.sdpTransform&&"function"==typeof this.connection.options.sdpTransform&&(n.sdp=this.connection.options.sdpTransform(n.sdp)||n.sdp);try{await e.setLocalDescription(n),em.log("Set localDescription:",n,`for:${this.connection.peer}`);let r={sdp:n,type:this.connection.type,connectionId:this.connection.connectionId,metadata:this.connection.metadata};if(this.connection.type===ek.Data){let e=this.connection;r={...r,label:e.label,reliable:e.reliable,serialization:e.serialization}}t.socket.send({type:eD.Offer,payload:r,dst:this.connection.peer})}catch(e){"OperationError: Failed to set local offer sdp: Called in wrong state: kHaveRemoteOffer"!=e&&(t.emitError(eR.WebRTC,e),em.log("Failed to setLocalDescription, ",e))}}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to createOffer, ",e)}}async _makeAnswer (){let e=this.connection.peerConnection,t=this.connection.provider;try{let n=await e.createAnswer();em.log("Created answer."),this.connection.options.sdpTransform&&"function"==typeof this.connection.options.sdpTransform&&(n.sdp=this.connection.options.sdpTransform(n.sdp)||n.sdp);try{await e.setLocalDescription(n),em.log("Set localDescription:",n,`for:${this.connection.peer}`),t.socket.send({type:eD.Answer,payload:{sdp:n,type:this.connection.type,connectionId:this.connection.connectionId},dst:this.connection.peer})}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to setLocalDescription, ",e)}}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to create answer, ",e)}}async handleSDP (e,t){t=new RTCSessionDescription(t);let n=this.connection.peerConnection,r=this.connection.provider;em.log("Setting remote description",t);try{await n.setRemoteDescription(t),em.log(`Set remoteDescription:${e} for:${this.connection.peer}`),"OFFER"===e&&await this._makeAnswer()}catch(e){r.emitError(eR.WebRTC,e),em.log("Failed to setRemoteDescription, ",e)}}async handleCandidate (e){em.log("handleCandidate:",e);try{await this.connection.peerConnection.addIceCandidate(e),em.log(`Added ICE candidate for:${this.connection.peer}`)}catch(e){this.connection.provider.emitError(eR.WebRTC,e),em.log("Failed to handleCandidate, ",e)}}_addTracksToConnection (e,t){if(em.log(`add tracks from stream ${e.id} to peer connection`),!t.addTrack)return em.error("Your browser does't support RTCPeerConnection#addTrack. Ignored.");e.getTracks().forEach(n=>{t.addTrack(n,e)})}_addStreamToMediaConnection (e,t){em.log(`add stream ${e.id} to media connection ${t.connectionId}`),t.addStream(e)}constructor (e){this.connection=e}}class eL extends e_.EventEmitter{emitError (e,t){em.error("Error:",t),this.emit("error",new eA(`${e}`,t))}}class eA extends Error{constructor (e,t){"string"==typeof t?super(t):(super(),Object.assign(this,t)),this.type=e}}class ej extends eL{get open (){return this._open}constructor (e,t,n){super(),this.peer=e,this.provider=t,this.options=n,this._open=!1,this.metadata=n.metadata}}class eB extends ej{get type (){return ek.Media}get localStream (){return this._localStream}get remoteStream (){return this._remoteStream}_initializeDataChannel (e){this.dataChannel=e,this.dataChannel.onopen=()=>{em.log(`DC#${this.connectionId} dc connection success`),this.emit("willCloseOnRemote")},this.dataChannel.onclose=()=>{em.log(`DC#${this.connectionId} dc closed for:`,this.peer),this.close()}}addStream (e){em.log("Receiving stream",e),this._remoteStream=e,super.emit("stream",e)}handleMessage (e){let t=e.type,n=e.payload;switch(e.type){case eD.Answer:this._negotiator.handleSDP(t,n.sdp),this._open=!0;break;case eD.Candidate:this._negotiator.handleCandidate(n.candidate);break;default:em.warn(`Unrecognized message type:${t} from peer:${this.peer}`)}}answer (e,t={}){if(this._localStream)return void em.warn("Local stream already exists on this MediaConnection. Are you answering a call twice?");for(let n of(this._localStream=e,t&&t.sdpTransform&&(this.options.sdpTransform=t.sdpTransform),this._negotiator.startConnection({...this.options._payload,_stream:e}),this.provider._getMessages(this.connectionId)))this.handleMessage(n);this._open=!0}close (){this._negotiator&&(this._negotiator.cleanup(),this._negotiator=null),this._localStream=null,this._remoteStream=null,this.provider&&(this.provider._removeConnection(this),this.provider=null),this.options&&this.options._stream&&(this.options._stream=null),this.open&&(this._open=!1,super.emit("close"))}constructor (e,t,n){super(e,t,n),this._localStream=this.options._stream,this.connectionId=this.options.connectionId||eB.ID_PREFIX+ef.randomToken(),this._negotiator=new eO(this),this._localStream&&this._negotiator.startConnection({_stream:this._localStream,originator:!0})}}eB.ID_PREFIX="mc_";class eU{_buildRequest (e){let t=this._options.secure?"https":"http",{host:n,port:r,path:i,key:s}=this._options,o=new URL(`${t}://${n}:${r}${i}${s}/${e}`);return o.searchParams.set("ts",`${Date.now()}${Math.random()}`),o.searchParams.set("version",eI),fetch(o.href,{referrerPolicy:this._options.referrerPolicy})}async retrieveId (){try{let e=await this._buildRequest("id");if(200!==e.status)throw Error(`Error. Status:${e.status}`);return e.text()}catch(t){em.error("Error retrieving ID",t);let e="";throw"/"===this._options.path&&this._options.host!==ef.CLOUD_HOST&&(e=" If you passed in a `path` to your self-hosted PeerServer, you'll also need to pass in that same path when creating a new Peer."),Error("Could not get an ID from the server."+e)}}async listAllPeers (){try{let e=await this._buildRequest("peers");if(200!==e.status){if(401===e.status){let e="";throw e=this._options.host===ef.CLOUD_HOST?"It looks like you're using the cloud server. You can email team@peerjs.com to enable peer listing for your API key.":"You need to enable `allow_discovery` on your self-hosted PeerServer to use this feature.",Error("It doesn't look like you have permission to list peers IDs. "+e)}throw Error(`Error. Status:${e.status}`)}return e.json()}catch(e){throw em.error("Error retrieving list peers",e),Error("Could not get list peers from the server."+e)}}constructor (e){this._options=e}}class eF extends ej{get type (){return ek.Data}_initializeDataChannel (e){this.dataChannel=e,this.dataChannel.onopen=()=>{em.log(`DC#${this.connectionId} dc connection success`),this._open=!0,this.emit("open")},this.dataChannel.onmessage=e=>{em.log(`DC#${this.connectionId} dc onmessage:`,e.data)},this.dataChannel.onclose=()=>{em.log(`DC#${this.connectionId} dc closed for:`,this.peer),this.close()}}close (e){if(e?.flush)return void this.send({__peerData:{type:"close"}});this._negotiator&&(this._negotiator.cleanup(),this._negotiator=null),this.provider&&(this.provider._removeConnection(this),this.provider=null),this.dataChannel&&(this.dataChannel.onopen=null,this.dataChannel.onmessage=null,this.dataChannel.onclose=null,this.dataChannel=null),this.open&&(this._open=!1,super.emit("close"))}send (e,t=!1){return this.open?this._send(e,t):void this.emitError(ew.NotOpenYet,"Connection is not open. You should listen for the `open` event before sending messages.")}async handleMessage (e){let t=e.payload;switch(e.type){case eD.Answer:await this._negotiator.handleSDP(e.type,t.sdp);break;case eD.Candidate:await this._negotiator.handleCandidate(t.candidate);break;default:em.warn("Unrecognized message type:",e.type,"from peer:",this.peer)}}constructor (e,t,n){super(e,t,n),this.connectionId=this.options.connectionId||eF.ID_PREFIX+eh(),this.label=this.options.label||this.connectionId,this.reliable=!!this.options.reliable,this._negotiator=new eO(this),this._negotiator.startConnection(this.options._payload||{originator:!0,reliable:this.reliable})}}eF.ID_PREFIX="dc_",eF.MAX_BUFFERED_AMOUNT=8388608;class eN extends eF{get bufferSize (){return this._bufferSize}_initializeDataChannel (e){super._initializeDataChannel(e),this.dataChannel.binaryType="arraybuffer",this.dataChannel.addEventListener("message",e=>this._handleDataMessage(e))}_bufferedSend (e){(this._buffering||!this._trySend(e))&&(this._buffer.push(e),this._bufferSize=this._buffer.length)}_trySend (e){if(!this.open)return!1;if(this.dataChannel.bufferedAmount>eF.MAX_BUFFERED_AMOUNT)return this._buffering=!0,setTimeout(()=>{this._buffering=!1,this._tryBuffer()},50),!1;try{this.dataChannel.send(e)}catch(e){return em.error(`DC#:${this.connectionId} Error when sending:`,e),this._buffering=!0,this.close(),!1}return!0}_tryBuffer (){if(!this.open||0===this._buffer.length)return;let e=this._buffer[0];this._trySend(e)&&(this._buffer.shift(),this._bufferSize=this._buffer.length,this._tryBuffer())}close (e){if(e?.flush)return void this.send({__peerData:{type:"close"}});this._buffer=[],this._bufferSize=0,super.close()}constructor (...e){super(...e),this._buffer=[],this._bufferSize=0,this._buffering=!1}}class ez extends eN{close (e){super.close(e),this._chunkedData={}}_handleDataMessage ({data:e}){let t=i(e),n=t.__peerData;if(n)return"close"===n.type?void this.close():void this._handleChunk(t);this.emit("data",t)}_handleChunk (e){let t=e.__peerData,n=this._chunkedData[t]||{data:[],count:0,total:e.total};if(n.data[e.n]=new Uint8Array(e.data),n.count++,this._chunkedData[t]=n,n.total===n.count){delete this._chunkedData[t];let e=function (e){let t=0;for(let n of e)t+=n.byteLength;let n=new Uint8Array(t),r=0;for(let t of e)n.set(t,r),r+=t.byteLength;return n}(n.data);this._handleDataMessage({data:e})}}_send (e,t){let n=s(e);return n instanceof Promise?this._send_blob(n):!t&&n.byteLength>this.chunker.chunkedMTU?void this._sendChunks(n):void this._bufferedSend(n)}async _send_blob (e){let t=await e;if(t.byteLength>this.chunker.chunkedMTU)return void this._sendChunks(t);this._bufferedSend(t)}_sendChunks (e){let t=this.chunker.chunk(e);for(let e of(em.log(`DC#${this.connectionId} Try to send ${t.length} chunks...`),t))this.send(e,!0)}constructor (e,t,r){super(e,t,r),this.chunker=new n,this.serialization=eE.Binary,this._chunkedData={}}}class e$ extends eN{_handleDataMessage ({data:e}){super.emit("data",e)}_send (e,t){this._bufferedSend(e)}constructor (...e){super(...e),this.serialization=eE.None}}class eV extends eN{_handleDataMessage ({data:e}){let t=this.parse(this.decoder.decode(e)),n=t.__peerData;if(n&&"close"===n.type)return void this.close();this.emit("data",t)}_send (e,t){let n=this.encoder.encode(this.stringify(e));if(n.byteLength>=ef.chunkedMTU)return void this.emitError(ew.MessageToBig,"Message too big for JSON channel");this._bufferedSend(n)}constructor (...e){super(...e),this.serialization=eE.JSON,this.encoder=new TextEncoder,this.decoder=new TextDecoder,this.stringify=JSON.stringify,this.parse=JSON.parse}}class eG extends eL{get id (){return this._id}get options (){return this._options}get open (){return this._open}get socket (){return this._socket}get connections (){let e=Object.create(null);for(let[t,n]of this._connections)e[t]=n;return e}get destroyed (){return this._destroyed}get disconnected (){return this._disconnected}_createServerConnection (){let e=new eM(this._options.secure,this._options.host,this._options.port,this._options.path,this._options.key,this._options.pingInterval);return e.on(ex.Message,e=>{this._handleMessage(e)}),e.on(ex.Error,e=>{this._abort(eR.SocketError,e)}),e.on(ex.Disconnected,()=>{this.disconnected||(this.emitError(eR.Network,"Lost connection to server."),this.disconnect())}),e.on(ex.Close,()=>{this.disconnected||this._abort(eR.SocketClosed,"Underlying socket is already closed.")}),e}_initialize (e){this._id=e,this.socket.start(e,this._options.token)}_handleMessage (e){let t=e.type,n=e.payload,r=e.src;switch(t){case eD.Open:this._lastServerId=this.id,this._open=!0,this.emit("open",this.id);break;case eD.Error:this._abort(eR.ServerError,n.msg);break;case eD.IdTaken:this._abort(eR.UnavailableID,`ID "${this.id}" is taken`);break;case eD.InvalidKey:this._abort(eR.InvalidKey,`API KEY "${this._options.key}" is invalid`);break;case eD.Leave:em.log(`Received leave message from ${r}`),this._cleanupPeer(r),this._connections.delete(r);break;case eD.Expire:this.emitError(eR.PeerUnavailable,`Could not connect to peer ${r}`);break;case eD.Offer:{let e=n.connectionId,t=this.getConnection(r,e);if(t&&(t.close(),em.warn(`Offer received for existing Connection ID:${e}`)),n.type===ek.Media){let i=new eB(r,this,{connectionId:e,_payload:n,metadata:n.metadata});t=i,this._addConnection(r,t),this.emit("call",i)}else{if(n.type!==ek.Data)return void em.warn(`Received malformed connection type:${n.type}`);let i=new this._serializers[n.serialization](r,this,{connectionId:e,_payload:n,metadata:n.metadata,label:n.label,serialization:n.serialization,reliable:n.reliable});t=i,this._addConnection(r,t),this.emit("connection",i)}for(let n of this._getMessages(e))t.handleMessage(n);break}default:{if(!n)return void em.warn(`You received a malformed message from ${r} of type ${t}`);let i=n.connectionId,s=this.getConnection(r,i);s&&s.peerConnection?s.handleMessage(e):i?this._storeMessage(i,e):em.warn("You received an unrecognized message:",e)}}}_storeMessage (e,t){this._lostMessages.has(e)||this._lostMessages.set(e,[]),this._lostMessages.get(e).push(t)}_getMessages (e){let t=this._lostMessages.get(e);return t?(this._lostMessages.delete(e),t):[]}connect (e,t={}){if(t={serialization:"default",...t},this.disconnected){em.warn("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect, or call reconnect on this peer if you believe its ID to still be available."),this.emitError(eR.Disconnected,"Cannot connect to new Peer after disconnecting from server.");return}let n=new this._serializers[t.serialization](e,this,t);return this._addConnection(e,n),n}call (e,t,n={}){if(this.disconnected){em.warn("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect."),this.emitError(eR.Disconnected,"Cannot connect to new Peer after disconnecting from server.");return}if(!t)return void em.error("To call a peer, you must provide a stream from your browser's `getUserMedia`.");let r=new eB(e,this,{...n,_stream:t});return this._addConnection(e,r),r}_addConnection (e,t){em.log(`add connection ${t.type}:${t.connectionId} to peerId:${e}`),this._connections.has(e)||this._connections.set(e,[]),this._connections.get(e).push(t)}_removeConnection (e){let t=this._connections.get(e.peer);if(t){let n=t.indexOf(e);-1!==n&&t.splice(n,1)}this._lostMessages.delete(e.connectionId)}getConnection (e,t){let n=this._connections.get(e);if(!n)return null;for(let e of n)if(e.connectionId===t)return e;return null}_delayedAbort (e,t){setTimeout(()=>{this._abort(e,t)},0)}_abort (e,t){em.error("Aborting!"),this.emitError(e,t),this._lastServerId?this.disconnect():this.destroy()}destroy (){this.destroyed||(em.log(`Destroy peer with ID:${this.id}`),this.disconnect(),this._cleanup(),this._destroyed=!0,this.emit("close"))}_cleanup (){for(let e of this._connections.keys())this._cleanupPeer(e),this._connections.delete(e);this.socket.removeAllListeners()}_cleanupPeer (e){let t=this._connections.get(e);if(t)for(let e of t)e.close()}disconnect (){if(this.disconnected)return;let e=this.id;em.log(`Disconnect peer with ID:${e}`),this._disconnected=!0,this._open=!1,this.socket.close(),this._lastServerId=e,this._id=null,this.emit("disconnected",e)}reconnect (){if(this.disconnected&&!this.destroyed)em.log(`Attempting reconnection to server with ID ${this._lastServerId}`),this._disconnected=!1,this._initialize(this._lastServerId);else if(this.destroyed)throw Error("This peer cannot reconnect to the server. It has already been destroyed.");else if(this.disconnected||this.open)throw Error(`Peer ${this.id} cannot reconnect because it is not disconnected from the server!`);else em.error("In a hurry? We're still trying to make the initial connection!")}listAllPeers (e=e=>{}){this._api.listAllPeers().then(t=>e(t)).catch(e=>this._abort(eR.ServerError,e))}constructor (e,t){let n;if(super(),this._serializers={raw:e$,json:eV,binary:ez,"binary-utf8":ez,default:ez},this._id=null,this._lastServerId=null,this._destroyed=!1,this._disconnected=!1,this._open=!1,this._connections=new Map,this._lostMessages=new Map,e&&e.constructor==Object?t=e:e&&(n=e.toString()),t={debug:0,host:ef.CLOUD_HOST,port:ef.CLOUD_PORT,path:"/",key:eG.DEFAULT_KEY,token:ef.randomToken(),config:ef.defaultConfig,referrerPolicy:"strict-origin-when-cross-origin",serializers:{},...t},this._options=t,this._serializers={...this._serializers,...this.options.serializers},"/"===this._options.host&&(this._options.host=window.location.hostname),this._options.path&&("/"!==this._options.path[0]&&(this._options.path="/"+this._options.path),"/"!==this._options.path[this._options.path.length-1]&&(this._options.path+="/")),void 0===this._options.secure&&this._options.host!==ef.CLOUD_HOST?this._options.secure=ef.isSecure():this._options.host==ef.CLOUD_HOST&&(this._options.secure=!0),this._options.logFunction&&em.setLogFunction(this._options.logFunction),em.logLevel=this._options.debug||0,this._api=new eU(t),this._socket=this._createServerConnection(),!ef.supports.audioVideo&&!ef.supports.data)return void this._delayedAbort(eR.BrowserIncompatible,"The current browser does not support WebRTC");if(n&&!ef.validateId(n))return void this._delayedAbort(eR.InvalidID,`ID "${n}" is invalid`);n?this._initialize(n):this._api.retrieveId().then(e=>this._initialize(e)).catch(e=>this._abort(eR.ServerError,e))}}eG.DEFAULT_KEY="peerjs",window.peerjs={Peer:eG,util:ef},window.Peer=eG})();
-
 ;(function (Scratch) {
   'use strict'
 
@@ -81,11 +72,48 @@
     patch: 0
   }
 
+  // Dynamically load PeerJS dependencies
+  const PEERJS_SOURCES = [
+    'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js',
+    'https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js'
+  ]
+
+  // Default arguments to use for the extension
+  const SESSION_SERVER = {
+    host: 'peerjs.mikedev101.cc',
+    port: 443,
+    secure: true,
+    path: '/',
+    key: 'peerjs',
+    connectTimeoutMs: 10000,
+    config: {
+      iceTransportPolicy: 'all',
+      iceServers: [
+        {
+          urls: 'stun:vpn.mikedev101.cc:3478'
+        },
+        {
+          urls: 'turn:vpn.mikedev101.cc:3478',
+          username: 'free',
+          credential: 'free'
+        },
+        {
+          urls: 'stun:vpn.mikedev101.cc:5349'
+        },
+        {
+          urls: 'turn:vpn.mikedev101.cc:5349',
+          username: 'free',
+          credential: 'free'
+        }
+      ]
+    }
+  }
+
   const blockIcon =
     'data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%22312%22%20height%3D%22218%22%20viewBox%3D%220%200%20312%20218%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M155.88%200C194.829%200.000212318%20226.786%2030.1084%20229.987%2068.4414H237.391C278.466%2068.4414%20311.759%20101.922%20311.759%20143.221C311.759%20184.52%20278.466%20218%20237.391%20218H74.3682C33.2934%20218%200%20184.52%200%20143.221C0.000123011%20101.922%2033.2935%2068.4415%2074.3682%2068.4414H81.7715C84.9733%2030.1082%20116.931%200%20155.88%200ZM155.88%2010C122.221%2010%2094.5136%2036.0335%2091.7373%2069.2744L90.9717%2078.4414H74.3682C38.8684%2078.4415%2010.0001%20107.392%2010%20143.221C10%20179.049%2038.8683%20208%2074.3682%20208H237.391C272.891%20208%20301.759%20179.049%20301.759%20143.221C301.759%20107.392%20272.891%2078.4414%20237.391%2078.4414H220.788L220.023%2069.2744C217.246%2036.0337%20189.539%2010.0002%20155.88%2010Z%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M109.5%20180V172.5L149.85%2072.4502H162L202.2%20172.5V180H109.5ZM124.95%20167.85H186.6L161.55%20102.45C161.25%20101.65%20160.7%20100.2%20159.9%2098.1002C159.1%2096.0002%20158.3%2093.8502%20157.5%2091.6502C156.8%2089.3502%20156.25%2087.6002%20155.85%2086.4002C155.35%2088.4002%20154.75%2090.4502%20154.05%2092.5502C153.45%2094.5502%20152.8%2096.4002%20152.1%2098.1002C151.5%2099.8002%20151%20101.25%20150.6%20102.45L124.95%20167.85Z%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E'
 
   const menuIcon =
-    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzczIiBoZWlnaHQ9IjM3MyIgdmlld0JveD0iMCAwIDM3MyAzNzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjE4Ni41IiBjeT0iMTg2LjUiIHI9IjE4Ni41IiBmaWxsPSIjMEY3RUJEIi8+CjxwYXRoIGQ9Ik0xODYuODggNjFDMjI1LjgyOSA2MS4wMDAyIDI1Ny43ODYgOTEuMTA4NCAyNjAuOTg3IDEyOS40NDFIMjY4LjM5MUMzMDkuNDY2IDEyOS40NDEgMzQyLjc1OSAxNjIuOTIyIDM0Mi43NTkgMjA0LjIyMUMzNDIuNzU5IDI0NS41MiAzMDkuNDY2IDI3OSAyNjguMzkxIDI3OUgxMDUuMzY4QzY0LjI5MzQgMjc5IDMxIDI0NS41MiAzMSAyMDQuMjIxQzMxLjAwMDEgMTYyLjkyMiA2NC4yOTM1IDEyOS40NDIgMTA1LjM2OCAxMjkuNDQxSDExMi43NzJDMTE1Ljk3MyA5MS4xMDgyIDE0Ny45MzEgNjEgMTg2Ljg4IDYxWk0xODYuODggNzFDMTUzLjIyMSA3MSAxMjUuNTE0IDk3LjAzMzUgMTIyLjczNyAxMzAuMjc0TDEyMS45NzIgMTM5LjQ0MUgxMDUuMzY4QzY5Ljg2ODQgMTM5LjQ0MiA0MS4wMDAxIDE2OC4zOTIgNDEgMjA0LjIyMUM0MSAyNDAuMDQ5IDY5Ljg2ODMgMjY5IDEwNS4zNjggMjY5SDI2OC4zOTFDMzAzLjg5MSAyNjkgMzMyLjc1OSAyNDAuMDQ5IDMzMi43NTkgMjA0LjIyMUMzMzIuNzU5IDE2OC4zOTIgMzAzLjg5MSAxMzkuNDQxIDI2OC4zOTEgMTM5LjQ0MUgyNTEuNzg4TDI1MS4wMjMgMTMwLjI3NEMyNDguMjQ2IDk3LjAzMzcgMjIwLjUzOSA3MS4wMDAyIDE4Ni44OCA3MVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNDAuNSAyNDFWMjMzLjVMMTgwLjg1IDEzMy40NUgxOTNMMjMzLjIgMjMzLjVWMjQxSDE0MC41Wk0xNTUuOTUgMjI4Ljg1SDIxNy42TDE5Mi41NSAxNjMuNDVDMTkyLjI1IDE2Mi42NSAxOTEuNyAxNjEuMiAxOTAuOSAxNTkuMUMxOTAuMSAxNTcgMTg5LjMgMTU0Ljg1IDE4OC41IDE1Mi42NUMxODcuOCAxNTAuMzUgMTg3LjI1IDE0OC42IDE4Ni44NSAxNDcuNEMxODYuMzUgMTQ5LjQgMTg1Ljc1IDE1MS40NSAxODUuMDUgMTUzLjU1QzE4NC40NSAxNTUuNTUgMTgzLjggMTU3LjQgMTgzLjEgMTU5LjFDMTgyLjUgMTYwLjggMTgyIDE2Mi4yNSAxODEuNiAxNjMuNDVMMTU1Ljk1IDIyOC44NVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo='
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzczIiBoZWlnaHQ9IjM3MyIgdmlld0JveD0iMCAwIDM3MyAzNzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjE4Ni41IiBjeT0iMTg2LjUiIHI9IjE4Ni41IiBmaWxsPSIjMEY3RUJEIi8+CjxwYXRoIGQ9Ik0xODYuODggNjFDMjI1LjgyOSA2MS4wMDAyIDI1Ny43ODYgOTEuMTA4NCAyNjAuOTg3IDEyOS40NDFIMjY4LjM5MUMzMDkuNDY2IDEyOS40NDEgMzQyLjc1OSAxNjIuOTIyIDM0Mi43NTkgMjA0LjIyMUMzNDIuNzU5IDI0NS41MiAzMDkuNDY2IDI3OSAyNjguMzkxIDI3OUgxMDUuMzY4QzY0LjI5MzQgMjc5IDMxIDI0NS41MiAzMSAyMDQuMjIxQzMxLjAwMDEgMTYyLjkyMiA2NC4yOTM1IDEyOS40NDIgMTA1LjM2OCAxMjkuNDQxSDExMi43NzJDMTE1Ljk3MyA5MS4xMDgyIDE0Ny45MzEgNjEgMTg2Ljg4IDYxWk0xODYuODggNzFDMTUzLjIyMSA3MSAxMjUuNTE0IDk3LjAzMzUgMTIyLjczNyAxMzAuMjc0TDEyMS45NzIgMTM5LjQ0MUgxMDUuMzY4QzY5Ljg2ODQgMTM5LjQ0MiA0MS4wMDAxIDE2OC4zOTIgNDEgMjA0LjIyMUM0MSAyNDAuMDQ5IDY5Ljg2ODMgMjY5IDEwNS4zNjggMjY5SDI2OC4zOTFDMzAzLjg5MSAyNjkgMzMyLjc1OSAyNDAuMDQ5IDMzMy43NTkgMjA0LjIyMUMzMzIuNzU5IDE2OC4zOTIgMzAzLjg5MSAxMzkuNDQxIDI2OC4zOTEgMTM5LjQ0MUgyNTEuNzg4TDI1MS4wMjMgMTMwLjI3NEMyNDguMjQ2IDk3LjAzMzcgMjIwLjUzOSA3MS4wMDAyIDE4Ni44OCA3MVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNDAuNSAyNDFWMjMzLjVMMTgwLjg1IDEzMy40NUgxOTNMMjMzLjIgMjMzLjVWMjQxSDE0MC41Wk0xNTUuOTUgMjI4Ljg1SDIxNy42TDE5Mi41NSAxNjMuNDVDMTkyLjI1IDE2Mi42NSAxOTEuNyAxNjEuMiAxOTAuOSAxNTkuMUMxOTAuMSAxNTcgMTg5LjMgMTU0Ljg1IDE4OC41IDE1Mi42NUMxODcuOCAxNTAuMzUgMTg3LjI1IDE0OC42IDE4Ni44NSAxNDcuNEMxODYuMzUgMTQ5LjQgMTg1Ljc1IDE1MS40NSAxODUuMDUgMTUzLjU1QzE4NC40NSAxNTUuNTUgMTgzLjggMTU3LjQgMTgzLjEgMTU5LjFDMTgyLjUgMTYwLjggMTgyIDE2Mi4yNSAxODEuNiAxNjMuNDVMMTU1Ljk1IDIyOC44NVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo='
 
   // Require the extension to be unsandboxed
   if (!Scratch.extensions.unsandboxed) {
@@ -116,7 +144,7 @@
     Scratch.vm.runtime.ext_cldelta_pluginloader = new Array()
   }
 
-  /*
+/*
 		Block utilities for creating blocks with less code.
 		Based on Rotur.js by Mistium
 		https://extensions.mistium.com/featured/Rotur.js
@@ -203,13 +231,26 @@
     })
   }
 
-  function getTarget (target_id, name, type = '') {
-    const target = vm.runtime.getTargetById(target_id)
-    if (!target) return undefined
-    const variable = Object.values(target.variables).find(
-      v => v.name === name && v.type === type
-    )
-    return variable
+  function getTarget (targetRef, name, type = '') {
+    const target =
+      typeof targetRef === 'string'
+        ? Scratch.vm.runtime.getTargetById(targetRef)
+        : targetRef
+
+    const findVariable = current => {
+      if (!current || !current.variables) return undefined
+      return Object.values(current.variables).find(
+        v => v.name === name && v.type === type
+      )
+    }
+
+    const localMatch = findVariable(target)
+    if (localMatch) return localMatch
+
+    const stage = Scratch.vm.runtime.getTargetForStage
+      ? Scratch.vm.runtime.getTargetForStage()
+      : null
+    return findVariable(stage)
   }
 
   // Ah yes, Perry the platypus. It seems you've found my callback-inator.
@@ -239,15 +280,16 @@
      * Does nothing if the callback was never bound.
      */
     unbind (name, id) {
-      if (id == '*') {
+      if (id === '*') {
         this.calls.delete(name)
         if (this.debug > 2) console.log(`Unbound all callbacks for "${name}"`)
         return
       }
       if (!this.calls.has(name) || !this.calls.get(name).has(id)) return
       this.calls.get(name).delete(id)
-      if (this.debug > 2)
+      if (this.debug > 2) {
         console.log(`Unbound callback for "${name}" with ID "${id}"`)
+      }
     }
 
     /**
@@ -267,8 +309,9 @@
         return
       }
       this.calls.get(name).set(id, callback)
-      if (this.debug > 2)
+      if (this.debug > 2) {
         console.log(`Bound callback for "${name}" with ID "${id}"`)
+      }
     }
 
     /**
@@ -284,44 +327,42 @@
      */
     call (name, ...args) {
       if (!this.calls.has(name)) {
-        if (this.debug > 1)
-          console.warn(`No callbacks registered for "${name}"`)
+        if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`)
         return
       }
-      if (this.calls.get(name) === null) {
-        if (this.debug > 1)
-          console.warn(`No callbacks registered for "${name}"`)
+
+      const callbacks = this.calls.get(name)
+      if (!callbacks || callbacks.size === 0) {
+        if (this.debug > 1) console.warn(`No callbacks registered for "${name}"`)
         return
       }
-      if (this.calls.get(name).size === 0) {
-        if (this.debug > 1)
-          console.warn(`No callbacks registered for "${name}"`)
+
+      if (!(callbacks instanceof Map)) {
+        if (this.debug > 0) {
+          console.error('Callback was not a map! Got ', typeof callbacks, 'instead.')
+        }
         return
       }
-      if (!(this.calls.get(name) instanceof Map)) {
-        if (this.debug > 0)
-          console.error(
-            'Callback was not a map! Got ',
-            typeof this.calls.get(name),
-            'instead.'
-          )
-        return
-      }
+
       if (this.debug > 2) console.log(`Executing callbacks for "${name}"`)
-      for (const callback of this.calls.get(name).values()) {
+
+      for (const callback of callbacks.values()) {
         if (callback === null || typeof callback !== 'function') {
-          if (this.debug > 1)
+          if (this.debug > 1) {
             console.warn(
               `Callback registered for "${name}" is null or not a function`
             )
+          }
           continue
         }
+
         try {
-          if (this.debug > 2) console.log(`Executing callback ${callback}"`)
+          if (this.debug > 2) console.log(`Executing callback ${callback}`)
           callback(...args)
         } catch (error) {
-          if (this.debug > 0)
+          if (this.debug > 0) {
             console.error(`Error executing callback for "${name}"`, error)
+          }
         }
       }
     }
@@ -329,18 +370,31 @@
 
   class CloudLinkDelta_Core {
     constructor () {
-      this.peer
+      this.peer = null
+      this.peerJsLoader = null
       this.name = ''
       this.dataConnections = new Map()
       this.newestConnected = ''
       this.lastDisconnected = ''
+      this.lastPacket = {
+        peer: '',
+        channel: ''
+      }
+      this.lastGlobalPacket = {
+        channel: '',
+        origin: ''
+      }
+      this.lastPeerErrorInfo = ''
+      this.peerStatus = 'idle'
+      this.peerConnectTimeout = null
+      this.outgoingConnectTimeoutMs = 10000
       this.verboseLogs = false
-      this.maskedConnections = new Set() // Set of connection IDs that are masked so that only plugins can send to them
+      this.maskedConnections = new Set()
       this.callbacks = new CallbackInator()
-      this.plugins = new Array() // []string
-      this.remapper = new Map() // map[string] function
-      this.taskQueue = new Map() // map[peer] function
-      this.pingPongInterval = 1000 // Default is every second
+      this.plugins = new Array()
+      this.remapper = new Map()
+      this.taskQueue = new Map()
+      this.pingPongInterval = 1000
       this.prettifier = null
       this.diagnostics = {
         guaranteedToWork: false,
@@ -372,9 +426,316 @@
        * @type {Map<string, Object>}
        */
       this.gmsg_state = new Map()
+
+      this.sessionServer = this._cloneSessionServer(SESSION_SERVER)
+      this.sessionServerInput = SESSION_SERVER.host
     }
 
     // Internal functions that aren't mapped to blocks
+
+    _cloneIceServer (server) {
+      const cloned = { ...server }
+      if (Array.isArray(cloned.urls)) {
+        cloned.urls = [...cloned.urls]
+      }
+      return cloned
+    }
+
+    _cloneSessionServer (server) {
+      return {
+        ...server,
+        config: {
+          ...server.config,
+          iceServers: (server.config?.iceServers || []).map(ice =>
+            this._cloneIceServer(ice)
+          )
+        }
+      }
+    }
+
+    _normalizePeerServerPath (path) {
+      let normalized = String(path || '/').trim()
+
+      if (!normalized.startsWith('/')) {
+        normalized = '/' + normalized
+      }
+
+      normalized = normalized.replace(/\/+$/, '')
+
+      if (normalized.toLowerCase().endsWith('/peerjs')) {
+        normalized = normalized.slice(0, -7)
+      }
+
+      if (!normalized) {
+        normalized = '/'
+      }
+
+      if (!normalized.endsWith('/')) {
+        normalized += '/'
+      }
+
+      return normalized
+    }
+
+    _normalizeSessionServerInput (input) {
+      const raw = Scratch.Cast.toString(input).trim()
+      const baseServer = this._cloneSessionServer(this.sessionServer || SESSION_SERVER)
+
+      if (!raw) {
+        return baseServer
+      }
+
+      let candidate = raw
+      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(candidate)) {
+        candidate = 'https://' + candidate
+      }
+
+      let parsed
+      try {
+        parsed = new URL(candidate)
+      } catch {
+        throw new Error('Invalid session server IP/URL.')
+      }
+
+      const secure = parsed.protocol === 'https:' || parsed.protocol === 'wss:'
+      const host = parsed.hostname
+      const port = parsed.port
+        ? parseInt(parsed.port, 10)
+        : secure
+          ? 443
+          : 80
+
+      if (!host) {
+        throw new Error('Session server IP/URL must include a valid host.')
+      }
+
+      baseServer.host = host
+      baseServer.port = Number.isFinite(port) && port > 0 ? port : secure ? 443 : 80
+      baseServer.secure = secure
+      baseServer.path = this._normalizePeerServerPath(parsed.pathname)
+
+      return baseServer
+    }
+
+    _normalizeIceUrl (url, kind) {
+      let value = Scratch.Cast.toString(url).trim()
+
+      if (!value) {
+        throw new Error(`${kind.toUpperCase()} URL cannot be empty.`)
+      }
+
+      if (!/^[a-z]+:/i.test(value)) {
+        value = `${kind}:${value}`
+      }
+
+      if (kind === 'stun' && !/^stuns?:/i.test(value)) {
+        throw new Error('STUN URL must begin with stun: or stuns:.')
+      }
+
+      if (kind === 'turn' && !/^turns?:/i.test(value)) {
+        throw new Error('TURN URL must begin with turn: or turns:.')
+      }
+
+      return value
+    }
+
+    _syncPeerConfig () {
+      if (this.peer && this.peer.options && this.peer.options.config) {
+        this.peer.options.config.iceTransportPolicy =
+          this.sessionServer.config.iceTransportPolicy
+        this.peer.options.config.iceServers =
+          this.sessionServer.config.iceServers.map(ice =>
+            this._cloneIceServer(ice)
+          )
+      }
+    }
+
+    _configureSessionServer (input) {
+      try {
+        this.sessionServer = this._normalizeSessionServerInput(input)
+        const raw = Scratch.Cast.toString(input).trim()
+        this.sessionServerInput = raw || this.sessionServer.host
+        this._syncPeerConfig()
+        return true
+      } catch (err) {
+        this._recordPeerError(err)
+        return false
+      }
+    }
+
+    _addIceServer (url, kind, extra = {}) {
+      try {
+        const normalized = this._normalizeIceUrl(url, kind)
+        const entry = {
+          urls: normalized
+        }
+
+        if (extra && typeof extra === 'object') {
+          if (extra.username !== undefined) {
+            entry.username = extra.username
+          }
+          if (extra.credential !== undefined) {
+            entry.credential = extra.credential
+          }
+        }
+
+        const nextIceServers = this.sessionServer.config.iceServers.map(ice =>
+          this._cloneIceServer(ice)
+        )
+
+        const alreadyExists = nextIceServers.some(server => {
+          const urls = Array.isArray(server.urls) ? server.urls : [server.urls]
+          const urlMatch = urls.some(existing => {
+            return String(existing).toLowerCase() === normalized.toLowerCase()
+          })
+
+          if (!urlMatch) return false
+
+          const existingUsername =
+            server.username === undefined ? '' : String(server.username)
+          const existingCredential =
+            server.credential === undefined ? '' : String(server.credential)
+          const nextUsername =
+            entry.username === undefined ? '' : String(entry.username)
+          const nextCredential =
+            entry.credential === undefined ? '' : String(entry.credential)
+
+          return (
+            existingUsername === nextUsername &&
+            existingCredential === nextCredential
+          )
+        })
+
+        if (!alreadyExists) {
+          nextIceServers.unshift(entry)
+        }
+
+        this.sessionServer.config.iceServers = nextIceServers
+        this._syncPeerConfig()
+      } catch (err) {
+        this._recordPeerError(err)
+      }
+    }
+
+    _getPeerConstructor () {
+      if (typeof Peer !== 'undefined') return Peer
+
+      if (typeof globalThis !== 'undefined') {
+        if (globalThis.Peer) return globalThis.Peer
+        if (globalThis.peerjs && globalThis.peerjs.Peer) {
+          return globalThis.peerjs.Peer
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        if (window.Peer) return window.Peer
+        if (window.peerjs && window.peerjs.Peer) {
+          return window.peerjs.Peer
+        }
+      }
+
+      if (typeof self !== 'undefined') {
+        if (self.Peer) return self.Peer
+        if (self.peerjs && self.peerjs.Peer) {
+          return self.peerjs.Peer
+        }
+      }
+
+      return null
+    }
+
+    _loadScript (src) {
+      return new Promise((resolve, reject) => {
+        if (typeof document === 'undefined') {
+          reject(new Error('Document is unavailable, so PeerJS cannot be loaded.'))
+          return
+        }
+
+        const mount =
+          document.head || document.documentElement || document.body
+
+        if (!mount) {
+          reject(new Error('No document mount point was found for loading PeerJS.'))
+          return
+        }
+
+        const existing = Array.from(document.querySelectorAll('script')).find(
+          script => script.src === src
+        )
+
+        if (existing) {
+          if (this._getPeerConstructor()) {
+            resolve()
+            return
+          }
+
+          const handleLoad = () => {
+            existing.removeEventListener('load', handleLoad)
+            existing.removeEventListener('error', handleError)
+            resolve()
+          }
+
+          const handleError = () => {
+            existing.removeEventListener('load', handleLoad)
+            existing.removeEventListener('error', handleError)
+            reject(new Error(`Failed to load PeerJS from ${src}`))
+          }
+
+          existing.addEventListener('load', handleLoad)
+          existing.addEventListener('error', handleError)
+          return
+        }
+
+        const script = document.createElement('script')
+        script.src = src
+        script.async = true
+        script.crossOrigin = 'anonymous'
+
+        script.onload = () => resolve()
+        script.onerror = () =>
+          reject(new Error(`Failed to load PeerJS from ${src}`))
+
+        mount.appendChild(script)
+      })
+    }
+
+    async _ensurePeerJsLoaded () {
+      const existingCtor = this._getPeerConstructor()
+      if (existingCtor) return existingCtor
+
+      if (this.peerJsLoader) return this.peerJsLoader
+
+      this.peerJsLoader = (async () => {
+        let lastError = null
+
+        for (const src of PEERJS_SOURCES) {
+          try {
+            await this._loadScript(src)
+
+            const PeerCtor = this._getPeerConstructor()
+            if (PeerCtor) return PeerCtor
+
+            lastError = new Error(
+              `PeerJS script loaded from ${src}, but no Peer constructor was exposed.`
+            )
+          } catch (err) {
+            lastError = err
+          }
+        }
+
+        throw (
+          lastError ||
+          new Error('PeerJS could not be loaded from any configured source.')
+        )
+      })()
+
+      try {
+        return await this.peerJsLoader
+      } catch (err) {
+        this.peerJsLoader = null
+        throw err
+      }
+    }
 
     /**
      * Converts a peer ID to a human-readable "pretty" format if a prettifier is registered.
@@ -383,10 +744,88 @@
      * @private
      */
     _prettyPeer (id) {
-      if (this.prettifier) {
-        return this.prettifier(id)
-      }
+      if (this.prettifier) return this.prettifier(id)
       return id
+    }
+
+    _clearPeerConnectTimeout () {
+      if (this.peerConnectTimeout) {
+        clearTimeout(this.peerConnectTimeout)
+        this.peerConnectTimeout = null
+      }
+    }
+
+    _clearOutgoingConnectTimeout (conn) {
+      if (conn && conn._cldeltaConnectTimeout) {
+        clearTimeout(conn._cldeltaConnectTimeout)
+        conn._cldeltaConnectTimeout = null
+      }
+    }
+
+    _failOutgoingConnection (conn, message, error = null) {
+      this._clearOutgoingConnectTimeout(conn)
+
+      if (!conn) return
+      if (conn.label !== 'default') return
+
+      if (message) {
+        this.lastPeerErrorInfo = message
+        if (this.peer) this.peer.errorInfo = message
+        console.error('[CLΔ Core] ' + message, error || '')
+        Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
+      }
+
+      if (this.dataConnections.get(conn.peer) === conn && !conn.open) {
+        this.dataConnections.delete(conn.peer)
+      }
+
+      try {
+        if (!conn.open) conn.close()
+      } catch {}
+    }
+
+    _recordPeerError (error) {
+      const message =
+        error && typeof error === 'object'
+          ? error.message || error.type || String(error)
+          : String(error)
+
+      this.lastPeerErrorInfo = message
+
+      if (this.peer) {
+        this.peer.errorInfo = message
+      }
+
+      console.error('[CLΔ Core] Peer error:', error)
+      Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
+      return message
+    }
+
+    _resetConnectionState () {
+      for (const tasks of this.taskQueue.values()) {
+        clearInterval(tasks.pinger)
+        clearInterval(tasks.poller)
+      }
+      this.taskQueue.clear()
+
+      for (const conn of this.dataConnections.values()) {
+        try {
+          conn.close()
+        } catch {}
+      }
+
+      this.dataConnections.clear()
+      this.newestConnected = ''
+      this.lastDisconnected = ''
+      this.lastPacket = {
+        peer: '',
+        channel: ''
+      }
+      this.lastGlobalPacket = {
+        channel: '',
+        origin: ''
+      }
+      this.gmsg_state.clear()
     }
 
     /**
@@ -399,17 +838,43 @@
         console.warn('[CLΔ Core] A prettifier is already registered. Overwriting.')
       }
       if (!plugin || typeof func !== 'function') {
-        console.error('[CLΔ Core] Prettifier registration failed: invalid plugin or function.')
+        console.error(
+          '[CLΔ Core] Prettifier registration failed: invalid plugin or function.'
+        )
         return
       }
       this.prettifier = func
-      console.log(`[CLΔ Core] Registered peer ID prettifier from plugin: ${plugin.id}`)
+      console.log(
+        `[CLΔ Core] Registered peer ID prettifier from plugin: ${plugin.id}`
+      )
     }
 
     removePrettifier () {
       if (this.prettifier) {
         this.prettifier = null
         console.log('[CLΔ Core] Removed peer ID prettifier.')
+      }
+    }
+
+    _sendOnChannel (conn, label, message) {
+      const entry = this._getChan(conn, label)
+      if (!entry || !entry.chan) return false
+
+      const transport = entry.chan
+      const isOpen =
+        transport === conn ? !!conn.open : transport.readyState === 'open'
+
+      if (!isOpen) return false
+
+      try {
+        transport.send(message)
+        return true
+      } catch (err) {
+        console.warn(
+          `[CLΔ Core] Failed to send on channel "${label}" with peer "${this._prettyPeer(conn.peer)}":`,
+          err
+        )
+        return false
       }
     }
 
@@ -420,7 +885,7 @@
      * @private
      */
     _send (packet) {
-      if (!this.peer) return
+      if (!this.peer || !this.peer.open) return
 
       // Apply defaults and origin
       const fullPacket = {
@@ -437,28 +902,35 @@
       if (target === '*') {
         // --- Broadcast to all peers ---
         for (const conn of this.dataConnections.values()) {
-
+          
           // Do not transmit a broadcast event if the connection is masked
-          if (this.maskedConnections.has(conn.id)) continue
+          if (this.maskedConnections.has(conn.peer)) continue
+          
+          if (!conn.channels || !conn.channels.has(channel)) continue
+          this._sendOnChannel(conn, channel, message)
+        }
+        return
+      }
 
-          if (conn.channels.has(channel)) {
-            this._getChan(conn, channel).chan.send(message)
-          }
-        }
-      } else {
-        // --- Unicast to a specific peer ---
-        const conn = this.dataConnections.get(target)
-        if (conn && conn.channels.has(channel)) {
-          this._getChan(conn, channel).chan.send(message)
-        } else if (conn) {
-          console.warn(
-            `[CLΔ Core] Cannot send packet: Channel "${channel}" not open with peer "${target}".`
-          )
-        } else {
-          console.warn(
-            `[CLΔ Core] Cannot send packet: Not connected to peer "${target}".`
-          )
-        }
+      const conn = this.dataConnections.get(target)
+      if (!conn) {
+        console.warn(
+          `[CLΔ Core] Cannot send packet: Not connected to peer "${target}".`
+        )
+        return
+      }
+
+      if (!conn.channels || !conn.channels.has(channel)) {
+        console.warn(
+          `[CLΔ Core] Cannot send packet: Channel "${channel}" not open with peer "${target}".`
+        )
+        return
+      }
+
+      if (!this._sendOnChannel(conn, channel, message)) {
+        console.warn(
+          `[CLΔ Core] Cannot send packet: Channel "${channel}" with peer "${target}" is not ready.`
+        )
       }
     }
 
@@ -475,19 +947,17 @@
       this.diagnostics.guaranteedToWork = false
 
       const browser = () => {
-        if (typeof navigator === 'undefined' || !navigator.userAgent)
+        if (typeof navigator === 'undefined' || !navigator.userAgent) {
           return 'Not a browser'
+        }
 
         const ua = navigator.userAgent.toLowerCase()
 
         if (ua.includes('firefox')) return 'firefox'
         if (ua.includes('edg/') || ua.includes('edge')) return 'edge'
-        if (
-          ua.includes('chrome') &&
-          !ua.includes('edg/') &&
-          !ua.includes('opr/')
-        )
+        if (ua.includes('chrome') && !ua.includes('edg/') && !ua.includes('opr/')) {
           return 'chrome'
+        }
         if (ua.includes('safari') && !ua.includes('chrome')) return 'safari'
 
         // If browser is unknown, check WebRTC compatibility
@@ -518,14 +988,9 @@
         try {
           const pc = new RTCPeerConnection()
           const dc = pc.createDataChannel('test', { reliable: true })
-
-          // If it was created successfully and supports the 'ordered' property,
-          // it's likely a modern, reliable implementation.
           const supported = 'ordered' in dc
-
           dc.close()
           pc.close()
-
           return supported
         } catch {
           return false
@@ -534,11 +999,7 @@
 
       const mediaCapable = () => {
         if (typeof navigator === 'undefined') return false
-
-        // Modern API (recommended)
         if (navigator.mediaDevices?.getUserMedia) return true
-
-        // Legacy fallbacks
         return !!(
           navigator.getUserMedia ||
           navigator.webkitGetUserMedia ||
@@ -546,7 +1007,6 @@
         )
       }
 
-      // Run all diagnostics
       this.diagnostics.browser = browser()
       this.diagnostics.dataCapable = dataCapable()
       this.diagnostics.reliableCapable = reliableCapable()
@@ -590,6 +1050,7 @@
      * @returns {any} - The return value of the remapped function if it exists, undefined otherwise.
      */
     _callRemapped (key, ...args) {
+      if (!this.remapper.has(key)) return undefined
       return this.remapper.get(key)(...args)
     }
 
@@ -610,7 +1071,8 @@
      * @param {Object} chan - The channel object.
      */
     _handleChannelOpen (conn, chan) {
-      conn.channels.set(chan.label, { chan, data: '' })
+      this._ensureConnProperties(conn)
+      this._ensureChanProperties(conn, chan.label, chan)
     }
 
     /**
@@ -619,7 +1081,9 @@
      * @param {Object} chan - The channel object.
      */
     _handleChannelClose (conn, chan) {
-      conn.channels.delete(chan.label)
+      if (conn.channels) {
+        conn.channels.delete(chan.label)
+      }
     }
 
     /**
@@ -630,23 +1094,19 @@
      */
     _handleChannelError (conn, chan, err) {
       console.warn(
-        'Channel ' + chan.label + ' error with peer ' + this._prettyPeer(conn.peer) + ':',
+        'Channel ' +
+          chan.label +
+          ' error with peer ' +
+          this._prettyPeer(conn.peer) +
+          ':',
         err
       )
-      this.peer.errorInfo = err
-      Scratch.vm.runtime.startHats('cldeltacore_whenPeerError')
+      this._recordPeerError(err)
     }
 
-    /**
-     * Ensures that the given connection has a default channel.
-     * If the connection's channel map is null, it is set to a new Map.
-     * If the default channel is not present in the channel map, it is added with the connection itself as the channel and an empty string as the channel data.
-     * @param {Object} conn - The connection object.
-     */
     _ensureDefaultChannel (conn) {
       if (!conn.channels) conn.channels = new Map()
       if (!conn.channels.has('default')) {
-        // conn.channels.set("default", { chan: conn, data: "" });
         this._ensureChanProperties(conn, 'default', conn)
       }
     }
@@ -659,36 +1119,32 @@
      */
     _ensureConnProperties (conn) {
       if (!conn.features) conn.features = new Array()
-      if (!conn.idCounter) conn.idCounter = 2
+      if (typeof conn.idCounter !== 'number') conn.idCounter = 2
       if (!conn.channels) conn.channels = new Map()
-      if (!conn.rtt) conn.rtt = 0
-      if (!conn.clockOffset) conn.clockOffset = 0
-      if (!conn.outgoingBitrate) conn.outgoingBitrate = 0
-      if (!conn.incomingBitrate) conn.incomingBitrate = 0
-      if (!conn.lastRecvBytes) conn.lastRecvBytes = 0
-      if (!conn.lastSendBytes) conn.lastSendBytes = 0
-      if (!conn.totalRecvBytes) conn.totalRecvBytes = 0
-      if (!conn.totalSendBytes) conn.totalSendBytes = 0
-      if (!conn.openTime) conn.openTime = Date.now()
+      if (typeof conn.rtt !== 'number') conn.rtt = 0
+      if (typeof conn.clockOffset !== 'number') conn.clockOffset = 0
+      if (typeof conn.outgoingBitrate !== 'number') conn.outgoingBitrate = 0
+      if (typeof conn.incomingBitrate !== 'number') conn.incomingBitrate = 0
+      if (typeof conn.lastRecvBytes !== 'number') conn.lastRecvBytes = 0
+      if (typeof conn.lastSendBytes !== 'number') conn.lastSendBytes = 0
+      if (typeof conn.totalRecvBytes !== 'number') conn.totalRecvBytes = 0
+      if (typeof conn.totalSendBytes !== 'number') conn.totalSendBytes = 0
+      if (typeof conn.openTime !== 'number') conn.openTime = Date.now()
     }
 
-    /**
-     * Ensures that a channel object has all the required properties.
-     * If any of the properties are missing, they are set to their default values.
-     * This function is called every time a new channel is established.
-     * @param {Object} conn - The connection object to be validated.
-     * @param {string} label - The label of the channel to be validated.
-     * @param {Object} chan - The channel object to be validated.
-     */
     _ensureChanProperties (conn, label, chan) {
       if (!conn.channels) conn.channels = new Map()
-      if (!conn.channels.has(label))
+
+      if (!conn.channels.has(label)) {
         conn.channels.set(label, {
-          chan,
+          chan: chan || null,
           data: ''
         })
-      if (!conn.channels.get(label).data) conn.channels.get(label).data = ''
-      if (!conn.channels.get(label).chan) conn.channels.get(label).chan = chan
+      }
+
+      const entry = conn.channels.get(label)
+      if (typeof entry.data === 'undefined') entry.data = ''
+      if (chan) entry.chan = chan
     }
 
     /**
@@ -699,11 +1155,10 @@
      * @returns {Object|null} The channel object if it exists, null otherwise.
      */
     _getChan (conn, label) {
-      if (conn.channels.has(label)) {
-        this._ensureChanProperties(conn, label, conn.channels.get(label).chan)
-        return conn.channels.get(label)
-      }
-      return null
+      if (!conn.channels || !conn.channels.has(label)) return null
+      const entry = conn.channels.get(label)
+      this._ensureChanProperties(conn, label, entry.chan)
+      return conn.channels.get(label)
     }
 
     /**
@@ -717,12 +1172,9 @@
     }
 
     /**
-     * Checks if a peer with the given ID is connected.
-     * This function first checks if the peer is stored in the data connections map,
-     * and if so, returns the value of the "open" property of the connection object.
-     * If the peer is not stored, it returns false.
+     * Checks if a peer with the given ID is stored in the data connections map.
      * @param {string} id - The ID of the peer to check for.
-     * @returns {boolean} True if the peer is connected, false otherwise.
+     * @returns {boolean} True if the peer is stored, false otherwise.
      */
     _isOtherPeerConnected (id) {
       return this._isOtherPeerStored(id)
@@ -740,11 +1192,19 @@
      */
     _handleDataConnection (conn) {
       conn.on('open', () => {
+        this._clearOutgoingConnectTimeout(conn)
         this._ensureConnProperties(conn)
         this._ensureDefaultChannel(conn)
-        const defaultchan = this._getChan(conn, 'default').chan
+
+        const defaultChanEntry = this._getChan(conn, 'default')
+        if (!defaultChanEntry) return
+        const defaultchan = defaultChanEntry.chan
+
         this._handleChannelOpen(conn, defaultchan)
-        defaultchan.send(
+
+        this._sendOnChannel(
+          conn,
+          'default',
           JSON.stringify({
             opcode: 'NEGOTIATE',
             ttl: 1,
@@ -760,7 +1220,9 @@
         )
 
         if (conn.label === 'default') {
-          console.log('[CLΔ Core] Peer ' + this._prettyPeer(conn.peer) + ' connected.')
+          console.log(
+            '[CLΔ Core] Peer ' + this._prettyPeer(conn.peer) + ' connected.'
+          )
           this.newestConnected = conn.peer
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerConnects')
           Scratch.vm.runtime.startHats('cldeltacore_whenSpecificPeerConnects')
@@ -775,7 +1237,9 @@
         this.callbacks.call('peer_connect', conn)
 
         const ping = () => {
-          defaultchan.send(
+          this._sendOnChannel(
+            conn,
+            'default',
             JSON.stringify({
               opcode: 'PING',
               payload: {
@@ -786,22 +1250,24 @@
           )
         }
 
-        // Create a background job to periodically poll stats and measure throughput
         const handleStats = async () => {
           try {
-            const stats = await conn.peerConnection.getStats()
-            let currentRecvBytes = 0
-            let currentSendBytes = 0
+            if (
+              !conn.peerConnection ||
+              typeof conn.peerConnection.getStats !== 'function'
+            ) {
+              return
+            }
 
+            const stats = await conn.peerConnection.getStats()
             const { _lastTime, lastSendBytes, lastRecvBytes } = conn
 
-            const totalBytes = stats.values().reduce(
+            const totalBytes = Array.from(stats.values()).reduce(
               (acc, report) => {
                 if (report.type === 'data-channel') {
-                  const { bytesSent, bytesReceived } = report
                   return {
-                    sendBytes: acc.sendBytes + (bytesSent || 0),
-                    recvBytes: acc.recvBytes + (bytesReceived || 0)
+                    sendBytes: acc.sendBytes + (report.bytesSent || 0),
+                    recvBytes: acc.recvBytes + (report.bytesReceived || 0)
                   }
                 }
                 return acc
@@ -809,19 +1275,18 @@
               { sendBytes: 0, recvBytes: 0 }
             )
 
-            currentSendBytes = totalBytes.sendBytes
-            currentRecvBytes = totalBytes.recvBytes
+            const currentSendBytes = totalBytes.sendBytes
+            const currentRecvBytes = totalBytes.recvBytes
 
             const now = performance.now()
             if (_lastTime) {
               const deltaTime = (now - _lastTime) / 1000
               conn.outgoingBitrate =
-                (currentSendBytes - lastSendBytes) / deltaTime
+                deltaTime > 0 ? (currentSendBytes - lastSendBytes) / deltaTime : 0
               conn.incomingBitrate =
-                (currentRecvBytes - lastRecvBytes) / deltaTime
+                deltaTime > 0 ? (currentRecvBytes - lastRecvBytes) / deltaTime : 0
             }
 
-            // Update properties
             conn.lastRecvBytes = currentRecvBytes
             conn.lastSendBytes = currentSendBytes
             conn.totalRecvBytes = currentRecvBytes
@@ -832,33 +1297,38 @@
           }
         }
 
-        // Schedule updates
-        this.taskQueue.set(
-          conn.peer,
-          {
-            pinger: setInterval(() => ping(), this.pingPongInterval),
-            poller: setInterval(async () => await handleStats(), 1000)
-          }
-        )
+        this.taskQueue.set(conn.peer, {
+          pinger: setInterval(() => ping(), this.pingPongInterval),
+          poller: setInterval(() => {
+            void handleStats()
+          }, 1000)
+        })
       })
 
       conn.on('close', () => {
+        this._clearOutgoingConnectTimeout(conn)
+
         if (conn.channels && conn.channels.has('default')) {
-          this._handleChannelClose(conn, this._getChan(conn, 'default').chan)
+          const entry = this._getChan(conn, 'default')
+          if (entry) this._handleChannelClose(conn, entry.chan)
         } else {
           this._handleChannelClose(conn, conn)
         }
+
         if (conn.label === 'default') {
           this.lastDisconnected = conn.peer
           this.dataConnections.delete(conn.peer)
-          /* if (this.voiceConnections.has(conn.peer)) {
-						this.voiceConnections.get(conn.peer).call.close();
-					}*/
+
           const tasks = this.taskQueue.get(conn.peer)
-          clearInterval(tasks.pinger)
-          clearInterval(tasks.poller)
+          if (tasks) {
+            clearInterval(tasks.pinger)
+            clearInterval(tasks.poller)
+          }
           this.taskQueue.delete(conn.peer)
-          console.log(`[CLΔ Core] Peer ${this._prettyPeer(conn.peer)} disconnected.`)
+
+          console.log(
+            `[CLΔ Core] Peer ${this._prettyPeer(conn.peer)} disconnected.`
+          )
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnects')
           Scratch.vm.runtime.startHats(
             'cldeltacore_whenSpecificPeerDisconnects'
@@ -869,14 +1339,23 @@
       })
 
       conn.on('error', err => {
+        this._clearOutgoingConnectTimeout(conn)
+
+        if (conn.label === 'default' && !conn.open) {
+          this.dataConnections.delete(conn.peer)
+        }
+
         this._handleChannelError(conn, conn, err)
       })
 
       conn.on('data', async msg => {
         this._ensureConnProperties(conn)
         this._ensureDefaultChannel(conn)
-        const defaultchan = this._getChan(conn, 'default').chan
-        await this._dataChanStreamReader(conn, defaultchan, msg)
+
+        const defaultChanEntry = this._getChan(conn, 'default')
+        if (!defaultChanEntry) return
+
+        await this._dataChanStreamReader(conn, defaultChanEntry.chan, msg)
       })
     }
 
@@ -891,16 +1370,15 @@
       const { opcode, payload, origin, ttl, listener } = data
 
       // 1. TTL Check
-      if (ttl === undefined || ttl < 0) {
-        return
-      }
+      if (ttl === undefined || ttl < 0) return
 
       // 2. Plugin Opcode Dispatcher
       // Check if a plugin (like Sync or Discovery) has registered this opcode
       if (this.opcodeHandlers.has(opcode)) {
         try {
+
           // Found a plugin handler, forward the entire packet
-          const {handler, requiredFeature} =  this.opcodeHandlers.get(opcode)
+          const { handler, requiredFeature } = this.opcodeHandlers.get(opcode)
 
           // Allow if no required feature or peer has it
           if (!requiredFeature || conn.features.includes(requiredFeature)) {
@@ -910,7 +1388,6 @@
               `[CLΔ Core] Plugin handler for opcode "${opcode}" requires advertised feature "${requiredFeature}", but peer does not have it.`
             )
           }
-
         } catch (e) {
           console.error(
             `[CLΔ Core] Error in plugin handler for opcode "${opcode}":`,
@@ -923,36 +1400,48 @@
       // 3. Core Opcode Handler
       // These are opcodes the Core handles itself
       switch (opcode) {
-        // --- User-facing message opcodes (from your blocks) ---
         case 'WARNING':
           alert(payload)
           break
+
         case 'VIOLATION':
           alert(payload)
           this.destroyPeer()
           break
+
         case 'G_MSG':
           this.gmsg_state.set(chan.label, {
             value: payload,
-            origin: origin || conn.peer // Use 'origin' if present, else fall back
+            origin: origin || conn.peer
           })
+          this.lastGlobalPacket = {
+            channel: chan.label,
+            origin: origin || conn.peer
+          }
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
           break
+
         case 'P_MSG':
+          this._ensureChanProperties(conn, chan.label, chan)
           conn.channels.get(chan.label).data = payload
+          this.lastPacket = {
+            peer: conn.peer,
+            channel: chan.label
+          }
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
           break
 
-        // --- Core internal opcodes ---
         case 'PING':
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call PING on non-default channel ' +
-                chan.label + ' with peer ' +
+                chan.label +
+                ' with peer ' +
                 this._prettyPeer(conn.peer)
             )
             return
           }
+
           chan.send(
             JSON.stringify({
               opcode: 'PONG',
@@ -965,27 +1454,31 @@
             })
           )
           break
-        case 'PONG':
+
+        case 'PONG': {
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call PONG on non-default channel ' +
-                chan.label + ' with peer ' +
+                chan.label +
+                ' with peer ' +
                 this._prettyPeer(conn.peer)
             )
             return
           }
-          var t3 = Date.now()
-          var { t1, t2 } = payload
-          var rtt = t3 - t1
-          var offset = (t2 - t1 + (t2 - t3)) / 2
-          conn.rtt = rtt
-          conn.clockOffset = offset
+
+          const t3 = Date.now()
+          const { t1, t2 } = payload
+          conn.rtt = t3 - t1
+          conn.clockOffset = (t2 - t1 + (t2 - t3)) / 2
           break
-        case 'NEGOTIATE':
+        }
+
+        case 'NEGOTIATE': {
           if (chan.label !== 'default') {
             console.warn(
               '[CLΔ Core] Attempted to call NEGOTIATE on non-default channel ' +
-                chan.label + ' with peer ' +
+                chan.label +
+                ' with peer ' +
                 this._prettyPeer(conn.peer)
             )
             return
@@ -1006,76 +1499,55 @@
               payload.version.patch +
               ')'
           )
-          if (payload.plugins.length > 0)
+
+          if (Array.isArray(payload.plugins) && payload.plugins.length > 0) {
             console.log(
               '[CLΔ Core] Peer ' +
                 this._prettyPeer(conn.peer) +
                 ' advertises the following plugins: ' +
-                Array.from(payload.plugins).join(', ')
+                payload.plugins.join(', ')
             )
-
-          let advertised_features = new Set()
-          if (payload.is_bridge) {
-            advertised_features.add('bridge')
-            // TODO: request list of bridged peers and their CL versions/dialects for translation
-          }
-          if (payload.is_relay) {
-            advertised_features.add('relay')
-            // TODO: reconfigure routes to use relay for broadcasts
-          }
-          if (payload.is_discovery) {
-            advertised_features.add('discovery')
-            // TODO: hook into discovery plugin (if present)
           }
 
-          if (advertised_features.size > 0)
+          const advertisedFeatures = new Set()
+
+          if (payload.is_bridge) advertisedFeatures.add('bridge')
+          if (payload.is_relay) advertisedFeatures.add('relay')
+          if (payload.is_discovery) advertisedFeatures.add('discovery')
+
+          if (advertisedFeatures.size > 0) {
             console.log(
               '[CLΔ Core] Peer ' +
                 this._prettyPeer(conn.peer) +
                 ' advertises the following features: ' +
-                Array.from(advertised_features).join(', ')
+                Array.from(advertisedFeatures).join(', ')
             )
-          
-          // Set peer features
-          conn.features = Array.from(advertised_features)
+          }
 
-          // Emit event
+          conn.features = Array.from(advertisedFeatures)
           this.callbacks.call('peer_negotiated', conn)
           break
+        }
 
-        case 'G_MSG':
-          this.gmsg_state.set(chan.label, {
-            value: payload,
-            origin: conn.peer.id
-          })
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
-          break
-
-        case 'P_MSG':
-          conn.channels.get(chan.label).data = payload
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
-          break
-
-        case 'NEW_CHAN':
+        case 'NEW_CHAN': {
           if (chan.label !== 'default') {
             console.warn(
               'Attempted to call NEW_CHAN on non-default channel ' +
-                chan.label + ' with peer ' +
+                chan.label +
+                ' with peer ' +
                 this._prettyPeer(conn.peer)
             )
             return
           }
 
           const { id, label, ordered } = payload
-
-          // Don't allow duplicate channel labels
           if (conn.channels.has(label)) return
 
-          // Acquire WebLock to prevent other peers from opening channels while we're creating this one
-          const lock_id = 'cldeltacore_' + conn.peer + '_' + chan.label
-          await navigator.locks.request(lock_id, () => {
-            // Don't allow duplicate channel labels
+          const lockId = 'cldeltacore_' + conn.peer + '_' + label
+          await navigator.locks.request(lockId, async () => {
             if (conn.channels.has(label)) return
+
+            this._ensureConnProperties(conn)
 
             const newchan = conn.peerConnection.createDataChannel(label, {
               ordered: ordered,
@@ -1083,19 +1555,12 @@
               id: id
             })
 
-            // Synchronize channel ID counter
             conn.idCounter = Math.max(conn.idCounter, id + 1)
-
-            // Bind handlers to channel
             this._chanMethodBinder(conn, newchan)
-
-            // Store channel reference
-            conn.channels.set(label, {
-              data: '',
-              chan: newchan
-            })
+            this._ensureChanProperties(conn, label, newchan)
           })
           break
+        }
 
         default:
           console.warn('Unknown or unimplemented opcode: ' + opcode)
@@ -1103,14 +1568,9 @@
       }
     }
 
-    /**
-     * Bind event listeners to a PeerJS DataChannel.
-     *
-     * @param {PeerJS.DataConnection} conn - The PeerJS DataConnection to bind events to.
-     * @param {PeerJS.DataChannel} chan - The PeerJS DataChannel to bind events to.
-     */
     _chanMethodBinder (conn, chan) {
       chan.onopen = () => {
+        this._ensureConnProperties(conn)
         this._handleChannelOpen(conn, chan)
       }
 
@@ -1122,76 +1582,147 @@
         this._handleChannelError(conn, chan, err)
       }
 
-      chan.onmessage = async msg => {
-        await this._dataChanStreamReader(conn, chan, msg)
+      chan.onmessage = async event => {
+        await this._dataChanStreamReader(conn, chan, event?.data ?? event)
       }
     }
 
-    /**
-     * Reads data from a PeerJS DataChannel and handles it by calling the relevant event handlers.
-     * @param {Object} conn - The connection object.
-     * @param {Object} chan - The channel object.
-     * @param {Object} data - The data object containing the opcode and payload.
-     */
-    async _dataChanStreamReader (conn, chan, data) {
-      if (data instanceof Object) {
-        await this._handleChannelData(conn, chan, data)
-      } else if (typeof data === 'string') {
-        await this._handleChannelData(conn, chan, JSON.parse(data))
-      } else {
-        console.error('Unknown data type: ' + typeof data)
+    async _dataChanStreamReader (conn, chan, raw) {
+      let data = raw
+
+      if (typeof MessageEvent !== 'undefined' && data instanceof MessageEvent) {
+        data = data.data
       }
+
+      if (data == null) return
+
+      if (typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer) {
+        data = new TextDecoder().decode(data)
+      } else if (
+        typeof ArrayBuffer !== 'undefined' &&
+        ArrayBuffer.isView &&
+        ArrayBuffer.isView(data)
+      ) {
+        data = new TextDecoder().decode(
+          new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+        )
+      } else if (typeof Blob !== 'undefined' && data instanceof Blob) {
+        data = await data.text()
+      }
+
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data)
+        } catch (err) {
+          console.error(
+            `[CLΔ Core] Failed to parse packet on channel "${chan.label}" from ${this._prettyPeer(conn.peer)}:`,
+            err,
+            data
+          )
+          return
+        }
+      }
+
+      if (!data || typeof data !== 'object') {
+        console.error(
+          `[CLΔ Core] Unsupported packet type on channel "${chan.label}":`,
+          data
+        )
+        return
+      }
+
+      this._ensureConnProperties(conn)
+      this._ensureChanProperties(conn, chan.label, chan)
+      await this._handleChannelData(conn, chan, data)
     }
 
-    /**
-     * Spawns a new peer with the given ID.
-     * @param {*} id 
-     */
-    _spawnPeer (id) {
-      this.name = id
-      this.peer = new Peer(id, {
-        host: 'peerjs.mikedev101.cc',
-        port: 443,
-        secure: true,
-        config: {
-          iceTransportPolicy: 'all',
-          iceServers: [
-            {
-              urls: 'stun:vpn.mikedev101.cc:3478'
-            },
-            {
-              urls: 'turn:vpn.mikedev101.cc:3478',
-              username: 'free',
-              credential: 'free'
-            },
-            {
-              urls: 'stun:vpn.mikedev101.cc:5349'
-            },
-            {
-              urls: 'turn:vpn.mikedev101.cc:5349',
-              username: 'free',
-              credential: 'free'
-            }
-          ]
-        },
-        // Only enable verbose logs if the user wants it - This can get very laggy if left enabled by accident
-        debug: this.verboseLogs ? 3 : 2
+    async _spawnPeer (id) {
+      let PeerCtor
+
+      try {
+        PeerCtor = await this._ensurePeerJsLoaded()
+      } catch (err) {
+        this._recordPeerError(err)
+        return
+      }
+
+      this._clearPeerConnectTimeout()
+      this._resetConnectionState()
+
+      if (this.peer && !this.peer.destroyed) {
+        try {
+          this.peer.destroy()
+        } catch {}
+      }
+
+      this.peerStatus = 'connecting'
+
+      const activeServer = this._cloneSessionServer(this.sessionServer || SESSION_SERVER)
+
+      const peerInstance = new PeerCtor(id, {
+        host: activeServer.host,
+        port: activeServer.port,
+        secure: activeServer.secure,
+        path: activeServer.path,
+        key: activeServer.key,
+        config: activeServer.config,
+        debug: this.verboseLogs ? 3 : 2,
+        metadata: {
+          protocol: 'delta',
+          id: id
+        }
       })
 
+      this.peer = peerInstance
       this.peer.errorInfo = ''
+      this.lastPeerErrorInfo = ''
+      this.name = id
 
-      this.peer.on('open', id => {
-        if (id === id) {
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerCreated')
-          this.callbacks.call('peer_open', id)
+      this.peerConnectTimeout = setTimeout(() => {
+        if (this.peer !== peerInstance || peerInstance.open) return
+
+        const message =
+          `Timed out connecting to session server "${activeServer.host}${activeServer.path}" as "${id}". ` +
+          'Check the PeerServer host/path or try again.'
+
+        this.lastPeerErrorInfo = message
+        peerInstance.errorInfo = message
+        console.error('[CLΔ Core] ' + message)
+        Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
+
+        try {
+          if (!peerInstance.destroyed) peerInstance.destroy()
+        } catch {}
+
+        if (this.peer === peerInstance) {
+          this.peer = null
+          this.peerStatus = 'error'
         }
+      }, activeServer.connectTimeoutMs)
+
+      peerInstance.on('open', openedId => {
+        if (this.peer !== peerInstance) return
+        this._clearPeerConnectTimeout()
+        this.peerStatus = 'open'
+        this.name = openedId
+        Scratch.vm.runtime.startHats('cldeltacore_whenPeerCreated')
+        this.callbacks.call('peer_open', openedId)
       })
 
-      this.peer.on('connection', conn => {
+      peerInstance.on('connection', conn => {
+        if (this.peer !== peerInstance) return
+
+        const metadata = conn.metadata || {}
+
         if (!conn.metadata) {
-          console.warn('Peer ' + this._prettyPeer(conn.peer) + ' did not set their metadata!!!')
+          console.warn(
+            'Peer ' +
+              this._prettyPeer(conn.peer) +
+              ' did not set their metadata!!!'
+          )
         }
-        if (!conn.metadata.protocol || conn.metadata.protocol !== 'delta') {
+
+        if (metadata.protocol !== 'delta') {
           console.warn(
             'Peer ' +
               this._prettyPeer(conn.peer) +
@@ -1199,63 +1730,80 @@
           )
         }
 
-        // Define properties to use
         this._ensureConnProperties(conn)
         this._ensureDefaultChannel(conn)
         this.dataConnections.set(conn.peer, conn)
         this._handleDataConnection(conn)
       })
 
-    this.peer.on('call', async call =>
-      this.callbacks.call('peer_call', call)
-    )
+      peerInstance.on('call', async call => {
+        if (this.peer !== peerInstance) return
+        this.callbacks.call('peer_call', call)
+      })
 
-      this.peer.on('close', () => {
+      peerInstance.on('close', () => {
+        this._clearPeerConnectTimeout()
+        if (this.peer === peerInstance) {
+          this.peerStatus = 'closed'
+        }
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerDestroyed')
       })
 
-      this.peer.on('disconnected', () => {
+      peerInstance.on('disconnected', () => {
+        this._clearPeerConnectTimeout()
+        if (this.peer === peerInstance) {
+          this.peerStatus = 'disconnected'
+        }
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnected')
       })
 
-      this.peer.on('error', err => {
-        const msg = String(err)
-        this.peer.errorInfo = msg
+      peerInstance.on('error', err => {
+        this._clearPeerConnectTimeout()
+        this.lastPeerErrorInfo = err?.message || err?.type || String(err)
+        peerInstance.errorInfo = this.lastPeerErrorInfo
+        console.error('[CLΔ Core] Peer error:', err)
         Scratch.vm.runtime.startHats('cldeltacore_whenPeerHasError')
+
+        if (!peerInstance.open && !peerInstance.destroyed) {
+          try {
+            peerInstance.destroy()
+          } catch {}
+        }
+
+        if (this.peer === peerInstance && !peerInstance.open) {
+          this.peer = null
+          this.peerStatus = 'error'
+        }
       })
     }
 
-    /**
-     * Creates a PeerJS Peer object. It can be remapped if needed.
-     */
-    _createPeer (id) {
-      if (this.peer) return
-
+    async _createPeer (id) {
       if (this._isRemapped('createPeer')) {
         return this._callRemapped('createPeer', id)
+      }
+
+      if (this.peer) {
+        if (this.peer.open && this.peer.id === id) return
+        try {
+          if (!this.peer.destroyed) this.peer.destroy()
+        } catch {}
+        this.peer = null
       }
 
       return this._spawnPeer(id)
     }
 
-    /**
-     * Resolves a given ID (which could be a username) to a peer instance ID if the remapper is active.
-     * @param {string} id The ID to resolve.
-     * @returns {string} The resolved instance ID, or the original ID if not found or not applicable.
-     */
     resolvePeerId (id) {
       if (this.enableIdRemapper && this.idRemapper) {
         const resolved = this.idRemapper().get(id)
-        // Return resolved ID, or original if not found.
         return resolved || id
       }
       return id
     }
 
-    registerMapper(plugin) {
-      if (this.enableIdRemapper) {
-        return
-      }
+    registerMapper (plugin) {
+      if (this.enableIdRemapper) return
+
       if (!plugin || typeof plugin.mapper !== 'function') {
         console.warn(
           '[CLΔ Core] Mapper failed to register: plugin must have a mapper() method.'
@@ -1263,18 +1811,12 @@
         return
       }
 
-      // Set mapper flag
       this.enableIdRemapper = true
-
-      // Set the mapper
       this.idRemapper = plugin.mapper
-
-      console.log(
-        `[CLΔ Core] Using ID remapper from plugin: ${plugin.id}`
-      )
+      console.log(`[CLΔ Core] Using ID remapper from plugin: ${plugin.id}`)
     }
 
-    removeMapper() {
+    removeMapper () {
       if (this.enableIdRemapper) {
         this.enableIdRemapper = false
         this.idRemapper = null
@@ -1290,8 +1832,11 @@
         return
       }
 
-      // Get the opcodes and handlers from the plugin
-      const handlers = plugin.getOpcodes(this) // 'this' is the core
+      if (plugin.id && !this.plugins.includes(plugin.id)) {
+        this.plugins.push(plugin.id)
+      }
+
+      const handlers = plugin.getOpcodes(this)
 
       for (const [opcode, value] of handlers.entries()) {
         if (this.opcodeHandlers.has(opcode)) {
@@ -1300,20 +1845,19 @@
           )
         }
 
-        let handler, requiredFeature
+        let handler
+        let requiredFeature
 
         if (typeof value === 'function') {
-          // Legacy format: value is just the handler function
           handler = value
-          requiredFeature = plugin.requiredFeature // Fallback to plugin-wide feature
+          requiredFeature = plugin.requiredFeature
         } else if (
           typeof value === 'object' &&
           value !== null &&
           typeof value.handler === 'function'
         ) {
-          // New format: value is an object { handler, requiredFeature }
           handler = value.handler
-          requiredFeature = value.requiredFeature // Can be undefined/null, which means no feature required
+          requiredFeature = value.requiredFeature
         } else {
           console.error(
             `[CLΔ Core] Invalid handler for opcode "${opcode}" from plugin ${plugin.id}`
@@ -1321,7 +1865,6 @@
           continue
         }
 
-        // Bind the handler to the plugin's 'this' context
         this.opcodeHandlers.set(opcode, {
           handler: handler.bind(plugin),
           requiredFeature: requiredFeature
@@ -1333,19 +1876,6 @@
       )
     }
 
-    /**
-     * Returns an object containing information about the CLΔ Core extension.
-     *
-     * @return {{
-     *   id: string,
-     *   name: string,
-     *   menuIconURI: string,
-     *   blockIconURI: string,
-     *   color1: string,
-     *   blocks: Array<Block>,
-     *   menus: Object
-     * }}
-     */
     getInfo () {
       return {
         id: 'cldeltacore',
@@ -1354,7 +1884,6 @@
         blockIconURI: blockIcon,
         color1: '#0F7EBD',
         blocks: [
-          // Labels
           opcodes.label(
             'Extension v' +
               EXTENSION_VERSION.major +
@@ -1366,7 +1895,6 @@
           opcodes.label('Dialect revision ' + DIALECT_REVISION),
           opcodes.separator(),
 
-          // Diagnostics
           opcodes.label('Diagnostics'),
           opcodes.reporter('currentBrowser', 'my current web browser'),
           opcodes.boolean(
@@ -1387,7 +1915,6 @@
           ),
           opcodes.separator(),
 
-          // Configuration
           opcodes.label('Configuration'),
           opcodes.command(
             'toggleVerboseLogs',
@@ -1403,9 +1930,31 @@
               DELAY: args.number(500)
             }
           ),
+          opcodes.command(
+            'useStun',
+            'Use STUN (stun url) [URL]',
+            {
+              URL: args.string('stun:vpn.mikedev101.cc:5349')
+            }
+          ),
+          opcodes.command(
+            'useTurn',
+            'Use TURN (url) [URL] username (user) [USER] credential (cred) [CRED]',
+            {
+              URL: args.string('turn:vpn.mikedev101.cc:5349'),
+              USER: args.string('free'),
+              CRED: args.string('free')
+            }
+          ),
+          opcodes.command(
+            'useSessionServer',
+            'Use Session Server [URL]',
+            {
+              URL: args.string('peerjs.mikedev101.cc')
+            }
+          ),
           opcodes.separator(),
 
-          // Client state
           opcodes.label('Client state'),
           opcodes.event('whenPeerCreated', 'when my peer is created'),
           opcodes.event('whenPeerDestroyed', 'when my peer is destroyed'),
@@ -1415,17 +1964,19 @@
           opcodes.boolean('isPeerConnected', 'connected to session server?'),
           opcodes.separator(),
 
-          // Connectivity
           opcodes.label('Connectivity'),
-          opcodes.command('createPeer', 'connect to session server as [ID]', {
-            ID: args.string('A')
-          }),
+          opcodes.command(
+            'createPeer',
+            'Connect as (username) [USERNAME]',
+            {
+              USERNAME: args.string('A')
+            }
+          ),
           opcodes.command('disconnectPeer', 'disconnect from session server'),
           opcodes.command('reconnectPeer', 'reconnect to session server'),
           opcodes.command('destroyPeer', 'destroy session server connection'),
           opcodes.separator(),
 
-          // Peers
           opcodes.label('Peers'),
           opcodes.event('whenPeerConnects', 'when a peer connects'),
           opcodes.reporter('readNewestPeerConnected', 'newest peer connected'),
@@ -1459,7 +2010,6 @@
           }),
           opcodes.separator(),
 
-          // Data channels
           opcodes.label('Channels'),
           opcodes.boolean(
             'doesPeerHaveChannel',
@@ -1490,14 +2040,12 @@
             'storePeerChannels',
             'store a list of all open channels with peer [ID] in list [LIST]',
             {
-              // TODO: missing implementation
               ID: args.string('B'),
               LIST: args.string('my list')
             }
           ),
           opcodes.separator(),
 
-          // Packets
           opcodes.label('Packets'),
           opcodes.event(
             'whenPeerGetsGlobalPacket',
@@ -1557,51 +2105,6 @@
               CHANNEL: args.string('default')
             }
           ),
-          opcodes.separator(),
-
-          // Utilites and routing
-          opcodes.label('Utilities and routing'),
-          opcodes.reporter('getPeerStats', '[TYPE] with peer [ID]', {
-            TYPE: args.string('transmit speed (bytes/s)', {
-              menu: 'statsMode'
-            }),
-            ID: args.string('B')
-          }),
-
-          opcodes.command(
-            'computeRoutingPath',
-            'compute routing path of peers [A] to [B]',
-            {
-              // TODO: missing implementation
-              A: args.string('A'),
-              B: args.string('B')
-            }
-          ),
-
-          opcodes.command(
-            'storeRoutingPath',
-            'store routing path of peers [A] to [B] in list [LIST]',
-            {
-              // TODO: missing implementation
-              A: args.string('A'),
-              B: args.string('B'),
-              LIST: args.string('my list')
-            }
-          ),
-
-          opcodes.conditional(
-            'multiPacketRoute',
-            [
-              'send the following packets',
-              'using routing table in list [LIST]'
-            ],
-            {
-              // TODO: missing implementation
-              arguments: {
-                LIST: args.string('my list')
-              }
-            }
-          )
         ],
         menus: {
           logMode: {
@@ -1622,92 +2125,114 @@
       }
     }
 
-    // Functions that are mapped to blocks
-
-    /**
-     * Returns the name of the browser currently running the extension.
-     * It has the following outputs:
-     * - firefox
-     * - chrome
-     * - safari
-     * - edge
-     * - Supported but unknown browser
-     * - Not a supported browser
-     * - Not a browser
-     * (the last one is a failback for an unknown, but WebRTC compatible environment)
-     * @returns {string} - The name of the browser.
-     */
     currentBrowser () {
       return this.diagnostics.browser
     }
 
-    /**
-     * Returns whether the browser is guaranteed to support CloudLink Delta.
-     * This is determined by running a set of diagnostics when the extension is loaded.
-     * @returns {boolean} - Whether the browser is guaranteed to support CloudLink Delta.
-     */
     isGuaranteedToWork () {
       return this.diagnostics.guaranteedToWork
     }
 
-    /**
-     * Checks if the browser supports data channels, which are used for
-     * the CloudLink Delta protocol.
-     * @returns {boolean} - Whether the browser supports DataChannels.
-     */
     isDataCapable () {
       return this.diagnostics.dataCapable
     }
 
-    /**
-     * Checks if the browser supports reliable data channels.
-     * If the browser doesn't support it, the PeerJS library will use
-     * a shim for compatibility.
-     * @returns {boolean} - Whether the browser supports reliable DataChannels.
-     */
     isReliableCapable () {
       return this.diagnostics.reliableCapable
     }
 
-    /**
-     * Checks if the browser is capable of streaming media.
-     * @returns {boolean} - Whether the browser supports MediaStreams.
-     */
     isMediaCapable () {
       return this.diagnostics.mediaCapable
     }
 
     toggleVerboseLogs ({ TOGGLE }) {
-      this.verboseLogs = Scratch.Cast.toString(TOGGLE) == 'enable'
+      this.verboseLogs = Scratch.Cast.toString(TOGGLE) === 'enable'
     }
 
-    setPingPongInterval ({ DELAY }) { // May not go lower than 100 ms as it will consume a lot of bandwidth
-      this.pingPongInterval =
-        Scratch.Cast.toNumber(DELAY) <= 100 ? 100 : Scratch.Cast.toNumber(DELAY)
+    setPingPongInterval ({ DELAY }) {
+      const delay = Scratch.Cast.toNumber(DELAY)
+      this.pingPongInterval = delay <= 100 ? 100 : delay
     }
 
-    createPeer ({ ID }) {
-      return this._createPeer(Scratch.Cast.toString(ID))
+    useStun ({ URL }) {
+      this._addIceServer(URL, 'stun')
+    }
+
+    useTurn ({ URL, USER, CRED }) {
+      const username = Scratch.Cast.toString(USER).trim()
+      const credential = Scratch.Cast.toString(CRED).trim()
+
+      this._addIceServer(URL, 'turn', {
+        username,
+        credential
+      })
+    }
+
+    useSessionServer (args) {
+      const serverInput =  Scratch.Cast.toString(
+        args.SERVER !== undefined ? args.SERVER : this.sessionServerInput
+      ).trim()
+
+      if (serverInput && !this._configureSessionServer(serverInput)) {
+        return
+      }
+    }
+
+    createPeer (args) {
+      const username = Scratch.Cast.toString(
+        args.USERNAME !== undefined ? args.USERNAME : args.ID
+      ).trim()
+
+      if (!username) {
+        this._recordPeerError('Username cannot be empty.')
+        return
+      }
+
+      return this._createPeer(username)
     }
 
     readPeerErrorInfo () {
-      if (!this.peer) return ''
-      return this.peer.errorInfo
+      if (!this.peer) return this.lastPeerErrorInfo
+      return this.peer.errorInfo || this.lastPeerErrorInfo
     }
 
     connectToPeer ({ ID }) {
       const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
-      if (!this.isPeerConnected()) return
-      if (this.dataConnections.has(peerId)) return
-      const conn = this.peer.connect(peerId, {
-        label: 'default',
-        metadata: {
-          name: this.name,
-          protocol: 'delta' // REQUIRED
-        },
-        reliable: true,
-        serialization: 'json'
-      })
+
+      if (!this.peer || this.peer.destroyed) return
+      if (this.peer.disconnected && this.peerStatus !== 'connecting') return
+
+      const existing = this.dataConnections.get(peerId)
+      if (existing) {
+        if (existing.open) return
+        this._failOutgoingConnection(existing)
+      }
+
+      let conn
+      try {
+        conn = this.peer.connect(peerId, {
+          label: 'default',
+          metadata: {
+            name: this.name,
+            protocol: 'delta'
+          },
+          reliable: true,
+          serialization: 'json'
+        })
+      } catch (err) {
+        this._recordPeerError(err)
+        return
+      }
+
+      conn._cldeltaConnectTimeout = setTimeout(() => {
+        if (this.dataConnections.get(conn.peer) !== conn || conn.open) return
+
+        this._failOutgoingConnection(
+          conn,
+          `Timed out connecting to peer "${peerId}".`
+        )
+      }, this.outgoingConnectTimeoutMs)
+
       this.dataConnections.set(conn.peer, conn)
       this._ensureConnProperties(conn)
       this._ensureDefaultChannel(conn)
@@ -1717,22 +2242,21 @@
     disconnectFromPeer ({ ID }) {
       const idStr = Scratch.Cast.toString(ID)
       let peerId = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peerId = this.resolvePeerId(idStr)
       }
+
       if (!this.peer) return
       if (!this.dataConnections.has(peerId)) return
+
       this.dataConnections.get(peerId).close()
       this.dataConnections.delete(peerId)
     }
 
     isOtherPeerConnected ({ ID }) {
       const idStr = Scratch.Cast.toString(ID)
-      // Check if the provided ID is a direct instance ID of a connected peer.
-      if (this._isOtherPeerConnected(idStr)) {
-        return true
-      }
-      // If not, resolve it as a username and check again.
+      if (this._isOtherPeerConnected(idStr)) return true
       const resolvedId = this.resolvePeerId(idStr)
       return this._isOtherPeerConnected(resolvedId)
     }
@@ -1740,58 +2264,67 @@
     closePeerChannel ({ ID, CHANNEL }) {
       const idStr = Scratch.Cast.toString(ID)
       let peerId = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peerId = this.resolvePeerId(idStr)
       }
-      CHANNEL = Scratch.Cast.toString(CHANNEL)
+
+      const channel = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return
-      this.dataConnections.get(peerId).channels.get(CHANNEL).chan.close()
+
+      const conn = this.dataConnections.get(peerId)
+      if (!conn || !conn.channels || !conn.channels.has(channel)) return
+
+      conn.channels.get(channel).chan.close()
     }
 
     async openNewPeerChannel ({ ID, CHANNEL, ORDERED }) {
       const idStr = Scratch.Cast.toString(ID)
       let peerId = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peerId = this.resolvePeerId(idStr)
       }
-      CHANNEL = Scratch.Cast.toString(CHANNEL)
+
+      const channel = Scratch.Cast.toString(CHANNEL)
+      const ordered = Scratch.Cast.toBoolean(ORDERED)
+
       if (!this.isPeerConnected()) return
       if (!this._isOtherPeerStored(peerId)) return
-      if (this.dataConnections.get(peerId).channels.has(CHANNEL)) return
 
-      const lock_id = 'cldeltacore_' + peerId + '_' + CHANNEL
-      await navigator.locks.request(lock_id, () => {
-        // Create a new channel with PeerJS
-        const conn = this.dataConnections.get(peerId)
-        if (!conn) return
-        if (conn.channels.has(CHANNEL)) return
+      const conn = this.dataConnections.get(peerId)
+      if (!conn) return
+      if (conn.channels.has(channel)) return
 
-        const id = conn.idCounter++
+      const lockId = 'cldeltacore_' + peerId + '_' + channel
+      await navigator.locks.request(lockId, async () => {
+        const liveConn = this.dataConnections.get(peerId)
+        if (!liveConn) return
+        if (liveConn.channels.has(channel)) return
 
-        // Since PeerJS doesn't natively support multiple channels, we have to create a new one manually
-        const chan = conn.peerConnection.createDataChannel(CHANNEL, {
-          ordered: ORDERED,
+        this._ensureConnProperties(liveConn)
+
+        const id = liveConn.idCounter++
+        const chan = liveConn.peerConnection.createDataChannel(channel, {
+          ordered: ordered,
           negotiated: true,
           id: id
         })
 
-        // Bind handlers to the channel
-        this._chanMethodBinder(conn, chan)
+        this._chanMethodBinder(liveConn, chan)
+        this._ensureChanProperties(liveConn, channel, chan)
 
-        // Store channel reference
-        this._ensureChanProperties(conn, CHANNEL, chan)
-
-        // Tell the peer about the new channel
-        this._ensureConnProperties(conn)
-        this._ensureDefaultChannel(conn)
-        this._getChan(conn, 'default').chan.send(
+        this._ensureDefaultChannel(liveConn)
+        this._sendOnChannel(
+          liveConn,
+          'default',
           JSON.stringify({
             opcode: 'NEW_CHAN',
             ttl: 1,
             payload: {
               id: id,
-              label: CHANNEL,
-              ordered: ORDERED
+              label: channel,
+              ordered: ordered
             }
           })
         )
@@ -1799,57 +2332,58 @@
     }
 
     sendMessageToPeer ({ MESSAGE, ID, CHANNEL }) {
-      // Do not transmit if the peer is masked
-      if (this.maskedConnections.has(Scratch.Cast.toString(ID))) return
-      this._sendMessageToPeer(MESSAGE, Scratch.Cast.toString(ID), Scratch.Cast.toString(CHANNEL))
+      this._sendMessageToPeer(
+        MESSAGE,
+        Scratch.Cast.toString(ID),
+        Scratch.Cast.toString(CHANNEL)
+      )
     }
 
-    _sendMessageToPeer(message, id, channel, opcode = 'P_MSG') {
-      let target = id;
+    _sendMessageToPeer (message, id, channel, opcode = 'P_MSG') {
+      let target = id
 
-      // If the provided ID isn't a direct connection and the remapper is on, try resolving it.
-      // This prevents resolving an instance ID back to a username.
       if (!this.dataConnections.has(id) && this.enableIdRemapper && this.idRemapper) {
-        const resolved = this.idRemapper().get(id);
-        if (resolved) {
-          target = resolved;
-        }
+        const resolved = this.idRemapper().get(id)
+        if (resolved) target = resolved
       }
 
-      const packet = {
+      if (this.maskedConnections.has(target)) return
+
+      this._send({
         opcode,
         payload: message,
         target,
         channel
-      }
-      this._send(packet)
+      })
     }
 
     sendMessageToAllPeers ({ MESSAGE, CHANNEL }) {
       this._sendMessageToAllPeers(MESSAGE, Scratch.Cast.toString(CHANNEL))
     }
 
-    _sendMessageToAllPeers(message, channel, opcode = 'G_MSG') {
-      const packet = {
+    _sendMessageToAllPeers (message, channel, opcode = 'G_MSG') {
+      this._send({
         opcode,
         payload: message,
-        target: '*', // '*' is the broadcast target
+        target: '*',
         channel
-      }
-      this._send(packet)
+      })
     }
 
     getPeerStats ({ TYPE, ID }) {
       const idStr = Scratch.Cast.toString(ID)
       let peer = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peer = this.resolvePeerId(idStr)
       }
-      if (!this._isOtherPeerStored(peer)) return
+
+      if (!this._isOtherPeerStored(peer)) return 0
       const conn = this.dataConnections.get(peer)
+
       switch (Scratch.Cast.toString(TYPE)) {
         case 'transmit speed (bytes/s)':
-          return Math.round(conn.outgoingBitrate) 
+          return Math.round(conn.outgoingBitrate)
         case 'receive speed (bytes/s)':
           return Math.round(conn.incomingBitrate)
         case 'total sent (bytes)':
@@ -1861,88 +2395,106 @@
         case 'ping offset (ms)':
           return conn.clockOffset
         case 'connection duration (s)':
-          if (!conn.openTime) {
-            return 0 // Connection isn't fully open yet
-          }
-          const durationInMs = Date.now() - conn.openTime
-          return Math.round(durationInMs / 1000)
+          if (!conn.openTime) return 0
+          return Math.round((Date.now() - conn.openTime) / 1000)
+        default:
+          return 0
       }
     }
 
     disconnectPeer () {
+      this._clearPeerConnectTimeout()
       if (!this.peer) return
       if (!this.peer.disconnected) this.peer.disconnect()
+      this.peerStatus = 'disconnected'
     }
 
     reconnectPeer () {
       if (!this.peer) return
-      if (this.peer.disconnected) this.peer.reconnect()
+      if (this.peer.disconnected) {
+        this.peerStatus = 'connecting'
+        this.peer.reconnect()
+      }
     }
 
     destroyPeer () {
+      this._clearPeerConnectTimeout()
       if (!this.peer) return
       if (!this.peer.destroyed) this.peer.destroy()
       this.peer = null
+      this.peerStatus = 'destroyed'
+      this._resetConnectionState()
     }
 
     isPeerConnected () {
       if (!this.peer) return false
-      return !this.peer.disconnected && !this.peer.destroyed
+      if (this.peerStatus === 'open') return true
+      return !!this.peer.open && !this.peer.disconnected && !this.peer.destroyed
+    }
+
+    whenPeerGetsGlobalPacket ({ CHANNEL }) {
+      return this.lastGlobalPacket.channel === Scratch.Cast.toString(CHANNEL)
     }
 
     whenPeerGetsPacket ({ ID, CHANNEL }) {
-      return this.doesPeerHaveChannel({
-        ID: Scratch.Cast.toString(ID),
-        CHANNEL
-      })
+      const idStr = Scratch.Cast.toString(ID)
+      const resolvedId = this.resolvePeerId(idStr)
+      const channel = Scratch.Cast.toString(CHANNEL)
+
+      const peerMatches =
+        this.lastPacket.peer === idStr || this.lastPacket.peer === resolvedId
+
+      return peerMatches && this.lastPacket.channel === channel
     }
 
     whenSpecificPeerConnects ({ ID }) {
       const idStr = Scratch.Cast.toString(ID)
-      if (this._isOtherPeerStored(idStr)) {
-        return true
-      }
       const resolvedId = this.resolvePeerId(idStr)
-      return this._isOtherPeerStored(resolvedId)
+      return (
+        this.newestConnected === idStr || this.newestConnected === resolvedId
+      )
     }
 
     whenSpecificPeerDisconnects ({ ID }) {
       const idStr = Scratch.Cast.toString(ID)
-      if (this._isOtherPeerStored(idStr)) {
-        // If it's stored, it's not disconnected.
-        return false
-      }
-      // It's not stored under the direct ID. Let's see if it's a username
-      // for a peer that is also not stored.
       const resolvedId = this.resolvePeerId(idStr)
-      return !this._isOtherPeerStored(resolvedId)
+      return (
+        this.lastDisconnected === idStr || this.lastDisconnected === resolvedId
+      )
     }
 
     doesPeerHaveChannel ({ ID, CHANNEL }) {
       const idStr = Scratch.Cast.toString(ID)
       let peerId = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peerId = this.resolvePeerId(idStr)
       }
-      CHANNEL = Scratch.Cast.toString(CHANNEL)
+
+      const channel = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return false
+
       const conn = this.dataConnections.get(peerId)
       if (!conn) return false
-      return conn.channels.has(CHANNEL)
+      return conn.channels.has(channel)
     }
 
     readPacketFromPeer ({ ID, CHANNEL }) {
       const idStr = Scratch.Cast.toString(ID)
       let peerId = idStr
+
       if (!this.dataConnections.has(idStr)) {
         peerId = this.resolvePeerId(idStr)
       }
-      CHANNEL = Scratch.Cast.toString(CHANNEL)
+
+      const channel = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return ''
+
       const conn = this.dataConnections.get(peerId)
-      if (!conn) return ''
-      if (!conn.channels.has(CHANNEL)) return ''
-      return this._getChan(conn, CHANNEL).data
+      if (!conn || !conn.channels.has(channel)) return ''
+
+      const entry = this._getChan(conn, channel)
+      return entry ? entry.data : ''
     }
 
     readGlobalPacketData ({ CHANNEL }) {
@@ -1966,31 +2518,20 @@
     }
 
     storePeerChannels ({ ID, LIST }, util) {
-      const peer_id = Scratch.Cast.toString(ID)
-      const list_name = Scratch.Cast.toString(LIST)
+      const peerIdInput = Scratch.Cast.toString(ID)
+      const peerId = this.dataConnections.has(peerIdInput)
+        ? peerIdInput
+        : this.resolvePeerId(peerIdInput)
+      const listName = Scratch.Cast.toString(LIST)
 
-      const target_list = getTarget(util.target, list_name)
-      if (!target_list) return
+      const targetList = getTarget(util.target, listName, 'list')
+      if (!targetList) return
 
-      const peer = this.dataConnections.get(peer_id)
+      const peer = this.dataConnections.get(peerId)
       if (!peer) return
-      
-      // Convert peer.channels to an array of names
-      const peer_channels = Array.from(peer.channels.keys())
-      target_list.set(peer_id, peer_channels)
-      target_list._monitorUpToDate = false
-    }
 
-    computeRoutingPath ({ A, B }) {
-      // TODO
-    }
-
-    storeRoutingPath ({ A, B, LIST }) {
-      // TODO
-    }
-
-    multiPacketRoute ({ LIST }) {
-      // TODO
+      targetList.value = Array.from(peer.channels.keys())
+      targetList._monitorUpToDate = false
     }
   }
 
@@ -2011,7 +2552,7 @@
         ' plugin(s) during startup.'
     )
     // Clean up
-    Scratch.vm.runtime.ext_cldelta_pluginloader = []
+    Scratch.vm.runtime.ext_cldelta_pluginloader = new Array()
   }
 
   // Run diagnostics
