@@ -2506,15 +2506,15 @@
     readGlobalPacketOrigin ({ CHANNEL }) {
       const chan = Scratch.Cast.toString(CHANNEL)
       if (!this.gmsg_state.has(chan)) return ''
-      return this.gmsg_state.get(chan).origin
+      return this._prettyPeer(this.gmsg_state.get(chan).origin)
     }
 
     readNewestPeerConnected () {
-      return this.newestConnected
+      return this._prettyPeer(this.newestConnected)
     }
 
     readLastPeerDisconnected () {
-      return this.lastDisconnected
+      return this._prettyPeer(this.lastDisconnected)
     }
 
     storePeerChannels ({ ID, LIST }, util) {
