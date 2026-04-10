@@ -394,6 +394,7 @@
       this.plugins = new Array()
       this.remapper = new Map()
       this.taskQueue = new Map()
+      this.pingPongEnabled = false
       this.pingPongInterval = 1000
       this.prettifier = null
       this.diagnostics = {
@@ -1297,12 +1298,21 @@
           }
         }
 
-        this.taskQueue.set(conn.peer, {
-          pinger: setInterval(() => ping(), this.pingPongInterval),
-          poller: setInterval(() => {
-            void handleStats()
-          }, 1000)
-        })
+        if (this.pingPongEnabled) {
+          this.taskQueue.set(conn.peer, {
+            pinger: setInterval(() => ping(), this.pingPongInterval),
+            poller: setInterval(() => {
+              void handleStats()
+            }, 1000)
+          })
+        } else {
+          this.taskQueue.set(conn.peer, {
+            pinger: 0,
+            poller: setInterval(() => {
+              void handleStats()
+            }, 1000)
+          })
+        }
       })
 
       conn.on('close', () => {
@@ -1920,7 +1930,14 @@
             'toggleVerboseLogs',
             '[TOGGLE] verbose browser console logs',
             {
-              TOGGLE: args.string('disable', { menu: 'logMode' })
+              TOGGLE: args.string('disable', { menu: 'toggler' })
+            }
+          ),
+          opcodes.command(
+            'enablePingPong',
+            '[TOGGLE] ping/pong',
+            {
+              TOGGLE: args.string('disable', { menu: 'toggler' })
             }
           ),
           opcodes.command(
@@ -2107,7 +2124,7 @@
           ),
         ],
         menus: {
-          logMode: {
+          toggler: {
             items: [Scratch.translate('disable'), Scratch.translate('enable')]
           },
           statsMode: {
@@ -2147,6 +2164,10 @@
 
     toggleVerboseLogs ({ TOGGLE }) {
       this.verboseLogs = Scratch.Cast.toString(TOGGLE) === 'enable'
+    }
+
+    enablePingPong({ ENABLE }) {
+      this.pingPongEnabled = Scratch.Cast.toBoolean(ENABLE)
     }
 
     setPingPongInterval ({ DELAY }) {
