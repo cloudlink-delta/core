@@ -408,6 +408,10 @@
       this.idRemapper = null
       this.enableIdRemapper = false
 
+      // Allow plugins to redirect packets to another peer
+      this.packetRedirector = null
+      this.enablePacketRedirector = false
+
       /**
        * A Map to register plugin handlers for specific opcodes.
        * Maps: opcode (string) -> handler (function)
@@ -897,10 +901,10 @@
         ...packet // The packet from the block will overwrite defaults
       }
 
-      const message = JSON.stringify(fullPacket)
       const { target, channel } = fullPacket
 
       if (target === '*') {
+        const message = JSON.stringify(fullPacket)
         // --- Broadcast to all peers ---
         for (const conn of this.dataConnections.values()) {
           
@@ -913,24 +917,35 @@
         return
       }
 
-      const conn = this.dataConnections.get(target)
+      let connectionTarget = target
+      if (this.enablePacketRedirector && this.packetRedirector) {
+        const redirected = this.packetRedirector(target)
+        if (redirected) {
+          connectionTarget = redirected
+          fullPacket.target = target
+        }
+      }
+
+      const message = JSON.stringify(fullPacket)
+
+      const conn = this.dataConnections.get(connectionTarget)
       if (!conn) {
         console.warn(
-          `[CLΔ Core] Cannot send packet: Not connected to peer "${target}".`
+          `[CLΔ Core] Cannot send packet: Not connected to peer "${connectionTarget}".`
         )
         return
       }
 
       if (!conn.channels || !conn.channels.has(channel)) {
         console.warn(
-          `[CLΔ Core] Cannot send packet: Channel "${channel}" not open with peer "${target}".`
+          `[CLΔ Core] Cannot send packet: Channel "${channel}" not open with peer "${connectionTarget}".`
         )
         return
       }
 
       if (!this._sendOnChannel(conn, channel, message)) {
         console.warn(
-          `[CLΔ Core] Cannot send packet: Channel "${channel}" with peer "${target}" is not ready.`
+          `[CLΔ Core] Cannot send packet: Channel "${channel}" with peer "${connectionTarget}" is not ready.`
         )
       }
     }
@@ -1119,6 +1134,7 @@
      * @param {Object} conn - The connection object to be validated.
      */
     _ensureConnProperties (conn) {
+      if (!conn.plugins) conn.plugins = new Array()
       if (!conn.features) conn.features = new Array()
       if (typeof conn.idCounter !== 'number') conn.idCounter = 2
       if (!conn.channels) conn.channels = new Map()
@@ -1519,6 +1535,8 @@
             )
           }
 
+          conn.plugins = payload.plugins
+
           const advertisedFeatures = new Set()
 
           if (payload.is_bridge) advertisedFeatures.add('bridge')
@@ -1830,6 +1848,28 @@
       if (this.enableIdRemapper) {
         this.enableIdRemapper = false
         this.idRemapper = null
+      }
+    }
+
+    registerRedirector (plugin) {
+      if (this.enablePacketRedirector) return
+
+      if (!plugin || typeof plugin.redirector !== 'function') {
+        console.warn(
+          '[CLΔ Core] Redirector failed to register: plugin must have a redirector() method.'
+        )
+        return
+      }
+
+      this.enablePacketRedirector = true
+      this.packetRedirector = plugin.redirector
+      console.log(`[CLΔ Core] Using packet redirector from plugin: ${plugin.id}`)
+    }
+
+    removeRedirector () {
+      if (this.enablePacketRedirector) {
+        this.enablePacketRedirector = false
+        this.packetRedirector = null
       }
     }
 
@@ -2219,6 +2259,8 @@
 
     connectToPeer ({ ID }) {
       const peerId = this.resolvePeerId(Scratch.Cast.toString(ID))
+
+      if (!peerId) return
 
       if (!this.peer || this.peer.destroyed) return
       if (this.peer.disconnected && this.peerStatus !== 'connecting') return
