@@ -188,6 +188,14 @@
       ...options
     }),
 
+    hat: (opcode, text, options = {}) => ({
+      opcode,
+      blockType: Scratch.BlockType.HAT,
+      text: Scratch.translate(text),
+      isEdgeActivated: false,
+      ...options
+    }),
+
     event: (opcode, text, options = {}) => ({
       opcode,
       blockType: Scratch.BlockType.EVENT,
@@ -1344,7 +1352,9 @@
         }
 
         if (conn.label === 'default') {
-          this.lastDisconnected = conn.peer
+          if (!this.maskedConnections.has(conn.peer)) {
+            this.lastDisconnected = conn.peer
+          }
           this.dataConnections.delete(conn.peer)
 
           const tasks = this.taskQueue.get(conn.peer)
@@ -1357,10 +1367,13 @@
           console.log(
             `[CLΔ Core] Peer ${this._prettyPeer(conn.peer)} disconnected.`
           )
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnects')
-          Scratch.vm.runtime.startHats(
-            'cldeltacore_whenSpecificPeerDisconnects'
-          )
+          
+          if (!this.maskedConnections.has(conn.peer)) {
+            Scratch.vm.runtime.startHats('cldeltacore_whenPeerDisconnects')
+            Scratch.vm.runtime.startHats(
+              'cldeltacore_whenSpecificPeerDisconnects'
+            )
+          }
         }
 
         this.callbacks.call('peer_disconnect', conn)
@@ -1446,7 +1459,9 @@
             channel: chan.label,
             origin: origin || conn.peer
           }
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
+          if (!this.maskedConnections.has(conn.peer)) {
+            Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
+          }
           break
 
         case 'P_MSG': {
@@ -1464,7 +1479,9 @@
             peer: sender,
             channel: chan.label
           }
-          Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
+          if (!this.maskedConnections.has(conn.peer) && !this.maskedConnections.has(sender)) {
+            Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
+          }
           break
         }
 
@@ -2053,12 +2070,12 @@
             'readLastPeerDisconnected',
             'last peer disconnected'
           ),
-          opcodes.event('whenSpecificPeerConnects', 'when peer [ID] connects', {
+          opcodes.hat('whenSpecificPeerConnects', 'when peer [ID] connects', {
             arguments: {
               ID: args.string('B')
             }
           }),
-          opcodes.event(
+          opcodes.hat(
             'whenSpecificPeerDisconnects',
             'when peer [ID] disconnects',
             {
@@ -2138,7 +2155,7 @@
               CHANNEL: args.string('default')
             }
           ),
-          opcodes.event(
+          opcodes.hat(
             'whenPeerGetsPacket',
             'when I get a packet from peer [ID] in channel [CHANNEL]',
             {
