@@ -431,6 +431,7 @@
        * @type {Map<string, Object>}
        */
       this.gmsg_state = new Map()
+      this.pmsg_state = new Map()
 
       this.sessionServer = this._cloneSessionServer(SESSION_SERVER)
       this.sessionServerInput = SESSION_SERVER.host
@@ -831,6 +832,7 @@
         origin: ''
       }
       this.gmsg_state.clear()
+      this.pmsg_state.clear()
     }
 
     /**
@@ -1447,15 +1449,24 @@
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsGlobalPacket')
           break
 
-        case 'P_MSG':
+        case 'P_MSG': {
+          const sender = origin || conn.peer
+          
+          if (!this.pmsg_state.has(sender)) {
+            this.pmsg_state.set(sender, new Map())
+          }
+          this.pmsg_state.get(sender).set(chan.label, payload)
+
           this._ensureChanProperties(conn, chan.label, chan)
           conn.channels.get(chan.label).data = payload
+          
           this.lastPacket = {
-            peer: conn.peer,
+            peer: sender,
             channel: chan.label
           }
           Scratch.vm.runtime.startHats('cldeltacore_whenPeerGetsPacket')
           break
+        }
 
         case 'PING':
           if (chan.label !== 'default') {
@@ -2155,8 +2166,25 @@
             }
           ),
           opcodes.command(
+            'sendMessageToPeerAndWait',
+            'send [MESSAGE] to peer [ID] using channel [CHANNEL] and wait',
+            {
+              MESSAGE: args.string('hello world'),
+              ID: args.string('B'),
+              CHANNEL: args.string('default')
+            }
+          ),
+          opcodes.command(
             'sendMessageToAllPeers',
             'send [MESSAGE] everyone using channel [CHANNEL]',
+            {
+              MESSAGE: args.string('hello world'),
+              CHANNEL: args.string('default')
+            }
+          ),
+          opcodes.command(
+            'sendMessageToAllPeersAndWait',
+            'send [MESSAGE] everyone using channel [CHANNEL] and wait',
             {
               MESSAGE: args.string('hello world'),
               CHANNEL: args.string('default')
@@ -2402,7 +2430,17 @@
       )
     }
 
-    _sendMessageToPeer (message, id, channel, opcode = 'P_MSG') {
+    sendMessageToPeerAndWait ({ MESSAGE, ID, CHANNEL }) {
+      return this._sendMessageToPeer(
+        MESSAGE,
+        Scratch.Cast.toString(ID),
+        Scratch.Cast.toString(CHANNEL),
+        'P_MSG',
+        true
+      )
+    }
+
+    _sendMessageToPeer (message, id, channel, opcode = 'P_MSG', awaitFlush = false) {
       let target = id
 
       if (!this.dataConnections.has(id) && this.enableIdRemapper && this.idRemapper) {
@@ -2410,7 +2448,10 @@
         if (resolved) target = resolved
       }
 
-      if (this.maskedConnections.has(target)) return
+      if (this.maskedConnections.has(target)) {
+        if (awaitFlush) return Promise.resolve()
+        return
+      }
 
       this._send({
         opcode,
@@ -2418,18 +2459,73 @@
         target,
         channel
       })
+
+      if (awaitFlush) {
+        return this._waitForBuffer(target, channel)
+      }
     }
 
     sendMessageToAllPeers ({ MESSAGE, CHANNEL }) {
       this._sendMessageToAllPeers(MESSAGE, Scratch.Cast.toString(CHANNEL))
     }
 
-    _sendMessageToAllPeers (message, channel, opcode = 'G_MSG') {
+    sendMessageToAllPeersAndWait ({ MESSAGE, CHANNEL }) {
+      return this._sendMessageToAllPeers(
+        MESSAGE,
+        Scratch.Cast.toString(CHANNEL),
+        'G_MSG',
+        true
+      )
+    }
+
+    _sendMessageToAllPeers (message, channel, opcode = 'G_MSG', awaitFlush = false) {
       this._send({
         opcode,
         payload: message,
         target: '*',
         channel
+      })
+
+      if (awaitFlush) {
+        const promises = []
+        for (const conn of this.dataConnections.values()) {
+          if (this.maskedConnections.has(conn.peer)) continue
+          promises.push(this._waitForBuffer(conn.peer, channel))
+        }
+        return Promise.all(promises)
+      }
+    }
+
+    _waitForBuffer (peerId, label) {
+      return new Promise(resolve => {
+        const conn = this.dataConnections.get(peerId)
+        if (!conn) {
+          resolve()
+          return
+        }
+        const entry = this._getChan(conn, label)
+        if (!entry || !entry.chan) {
+          resolve()
+          return
+        }
+        const transport = entry.chan
+        const dataChannel = transport.dataChannel || transport
+        if (!dataChannel || typeof dataChannel.bufferedAmount === 'undefined') {
+          resolve()
+          return
+        }
+        const check = () => {
+          if (dataChannel.readyState !== 'open') {
+            resolve()
+            return
+          }
+          if (dataChannel.bufferedAmount === 0) {
+            resolve()
+          } else {
+            setTimeout(check, 10)
+          }
+        }
+        check()
       })
     }
 
@@ -2544,13 +2640,23 @@
 
     readPacketFromPeer ({ ID, CHANNEL }) {
       const idStr = Scratch.Cast.toString(ID)
+      const resolvedId = this.resolvePeerId(idStr)
+      const channel = Scratch.Cast.toString(CHANNEL)
+
+      if (this.pmsg_state.has(idStr) && this.pmsg_state.get(idStr).has(channel)) {
+        return this.pmsg_state.get(idStr).get(channel)
+      }
+
+      if (this.pmsg_state.has(resolvedId) && this.pmsg_state.get(resolvedId).has(channel)) {
+        return this.pmsg_state.get(resolvedId).get(channel)
+      }
+
       let peerId = idStr
 
       if (!this.dataConnections.has(idStr)) {
-        peerId = this.resolvePeerId(idStr)
+        peerId = resolvedId
       }
 
-      const channel = Scratch.Cast.toString(CHANNEL)
       if (!this._isOtherPeerStored(peerId)) return ''
 
       const conn = this.dataConnections.get(peerId)
