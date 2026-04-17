@@ -1985,6 +1985,10 @@
               EXTENSION_VERSION.patch
           ),
           opcodes.label('Dialect revision ' + DIALECT_REVISION),
+          opcodes.button(
+            'View Documentation',
+            'openDocs',
+          ),
           opcodes.separator(),
 
           opcodes.label('Diagnostics'),
@@ -2239,6 +2243,10 @@
           }
         }
       }
+    }
+
+    openDocs() {
+      window.open('https://hackmd.io/@MikeDEV/Hy16_ni2Zg')
     }
 
     currentBrowser () {
