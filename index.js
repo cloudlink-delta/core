@@ -416,8 +416,8 @@
       this.plugins = new Array()
       this.remapper = new Map()
       this.taskQueue = new Map()
-      this.pingPongEnabled = false
-      this.pingPongInterval = 1000
+      this.pingPongEnabled = true
+      this.pingPongInterval = 5000
       this.prettifier = null
       this.diagnostics = {
         guaranteedToWork: false,
